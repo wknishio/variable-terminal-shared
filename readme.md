@@ -2,7 +2,7 @@
 
 ## Overview
 
-This software is a collection of shared libraries for project Variable-Terminal.
+This software builds modified shared libraries for project Variable-Terminal.
 
 Most package names of the shared libraries are shaded whenever possible.
 
