@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="build" name="Ant Build for Project Variable-Terminal-Pure">
+	<!--this file was created by Eclipse Runnable JAR Export Wizard-->
+	<!--ANT 1.7 is required                                        -->
+	<tstamp>
+		<format property="build.time.era" pattern="G" locale="en,US"/>
+	</tstamp>
+	
+	<tstamp>
+		<format property="build.time.date" pattern="yyyy-MM-dd HH:mm:ss:sss zzz"/>
+	</tstamp>
+	
+	<property name="build.name" value="org/vash/vate/"/>
+	<property name="build.package" value="org.vash.vate"/>
+	<property name="build.title" value="variable-terminal-pure"/>
+	<property name="build.version" value="1.4.2"/>
+	<property name="build.vendor" value="http://github.com/wknishio/variable-terminal-pure"/>
+	
+	<condition property="javac-spec" value="1.5" else="${java.specification.version}">
+		<or>
+			<contains string="${java.specification.version}" substring="1.5"/>
+			<contains string="${java.specification.version}" substring="1.6"/>
+			<contains string="${java.specification.version}" substring="1.7"/>
+			<contains string="${java.specification.version}" substring="1.8"/>
+		</or>
+	</condition>
+	
+	<target name="clean">
+		
+		<delete dir="build"/>
+		<delete dir="dist"/>
+		<mkdir dir="build"/>
+		<mkdir dir="dist"/>
+		<touch file="build/keep"/>
+		<touch file="dist/keep"/>
+		
+	</target>
+	
+	<target name="build">
+		
+		<antcall target="clean"/>
+		<antcall target="compile_sources"/>
+		<antcall target="create_libraries"/>
+		<antcall target="create_executables"/>
+		
+	</target>
+	
+	<target name="compile_sources">
+		
+		<delete file="build/keep"/>
+		<delete file="dist/keep"/>
+		<javac fork="yes" executable="javac" srcdir="src" destdir="build" includes="**/*.java" debug="off" source="${javac-spec}" target="${javac-spec}">
+			<classpath>
+				<fileset dir="lib">
+					<include name="**/*.jar"/>
+				</fileset>
+				<!--
+				<fileset dir="groovy">
+					<include name="**/*.jar"/>
+				</fileset>
+				-->
+			</classpath>
+		</javac>
+		<copy todir="build">
+			<fileset dir="src/vate" includes="**/*.png,**/*.properties,**/*.ttf"/>
+		</copy>
+		
+	</target>
+	
+	<target name="create_libraries">
+		
+		<delete dir="dist/lib-pure"/>
+		<mkdir dir="dist/lib-pure"/>
+		<copy todir="dist/lib-pure" overwrite="true">
+			<fileset dir="script/lib"/>
+		</copy>
+		
+		<jar destfile="dist/lib-pure/vate-pure-lib.jar" update="false">
+			<manifest>
+				<attribute name="Built-By" value="William Kendi Nishio"/>
+				<attribute name="Build-Date" value="${build.time.era} ${build.time.date}"/>
+				<attribute name="Created-By" value="${java.version}"/>
+				<attribute name="Class-Path" value="."/>
+				<section name="${build.name}">
+					<attribute name="Specification-Title" value="${build.title}"/>
+					<attribute name="Specification-Version" value="${build.version}"/>
+					<attribute name="Specification-Vendor" value="${build.vendor}"/>
+					<attribute name="Implementation-Title" value="${build.title}"/>
+					<attribute name="Implementation-Version" value="${build.version}"/>
+					<attribute name="Implementation-Vendor" value="${build.vendor}"/>
+				</section>
+			</manifest>
+			<fileset dir="build"/>
+			<zipgroupfileset dir="lib" excludes="META-INF/*.SF,META-INF/*.DSA,META-INF/*.RSA"/>
+		</jar>
+		
+	</target>
+	
+	<target name="create_executables">
+		
+		<delete dir="dist/all-pure"/>
+		<mkdir dir="dist/all-pure"/>
+		<copy todir="dist/all-pure" overwrite="true">
+			<fileset dir="script/all"/>
+			<fileset dir="util"/>
+			<fileset dir="doc"/>
+			<fileset dir="conf/server"/>
+			<fileset dir="conf/client"/>
+		</copy>
+		
+		<jar destfile="dist/all-pure/vate-pure-all-console.jar" filesetmanifest="mergewithoutmain" update="false">
+			<manifest>
+				<attribute name="Built-By" value="William Kendi Nishio"/>
+				<attribute name="Build-Date" value="${build.time.era} ${build.time.date}"/>
+				<attribute name="Created-By" value="${java.version}"/>
+				<attribute name="Main-Class" value="org.vash.vate.startup.VTGraphicalStart"/>
+				<attribute name="Class-Path" value="."/>
+				<section name="${build.name}">
+					<attribute name="Specification-Title" value="${build.title}"/>
+					<attribute name="Specification-Version" value="${build.version}"/>
+					<attribute name="Specification-Vendor" value="${build.vendor}"/>
+					<attribute name="Implementation-Title" value="${build.title}"/>
+					<attribute name="Implementation-Version" value="${build.version}"/>
+					<attribute name="Implementation-Vendor" value="${build.vendor}"/>
+				</section>
+			</manifest>
+			<fileset dir="build"/>
+			<zipgroupfileset dir="lib" excludes="META-INF/*.SF,META-INF/*.DSA,META-INF/*.RSA"/>
+		</jar>
+		
+		<jar destfile="dist/all-pure/vate-pure-all-shell.jar" filesetmanifest="mergewithoutmain" update="false">
+			<manifest>
+				<attribute name="Built-By" value="William Kendi Nishio"/>
+				<attribute name="Build-Date" value="${build.time.era} ${build.time.date}"/>
+				<attribute name="Created-By" value="${java.version}"/>
+				<attribute name="Main-Class" value="org.vash.vate.startup.VTStandardStart"/>
+				<attribute name="Class-Path" value="."/>
+				<section name="${build.name}">
+					<attribute name="Specification-Title" value="${build.title}"/>
+					<attribute name="Specification-Version" value="${build.version}"/>
+					<attribute name="Specification-Vendor" value="${build.vendor}"/>
+					<attribute name="Implementation-Title" value="${build.title}"/>
+					<attribute name="Implementation-Version" value="${build.version}"/>
+					<attribute name="Implementation-Vendor" value="${build.vendor}"/>
+				</section>
+			</manifest>
+			<fileset dir="build"/>
+			<zipgroupfileset dir="lib" excludes="META-INF/*.SF,META-INF/*.DSA,META-INF/*.RSA"/>
+		</jar>
+		
+		<delete dir="dist/client-pure"/>
+		<mkdir dir="dist/client-pure"/>
+		<copy todir="dist/client-pure" overwrite="true">
+			<fileset dir="script/client"/>
+			<fileset dir="util"/>
+			<fileset dir="doc"/>
+			<fileset dir="conf/client"/>
+		</copy>
+		
+		<jar destfile="dist/client-pure/vate-pure-client-console.jar" filesetmanifest="mergewithoutmain" update="false">
+			<manifest>
+				<attribute name="Built-By" value="William Kendi Nishio"/>
+				<attribute name="Build-Date" value="${build.time.era} ${build.time.date}"/>
+				<attribute name="Created-By" value="${java.version}"/>
+				<attribute name="Main-Class" value="org.vash.vate.client.startup.VTClientGraphicalStart"/>
+				<attribute name="Class-Path" value="."/>
+				<section name="${build.name}">
+					<attribute name="Specification-Title" value="${build.title}"/>
+					<attribute name="Specification-Version" value="${build.version}"/>
+					<attribute name="Specification-Vendor" value="${build.vendor}"/>
+					<attribute name="Implementation-Title" value="${build.title}"/>
+					<attribute name="Implementation-Version" value="${build.version}"/>
+					<attribute name="Implementation-Vendor" value="${build.vendor}"/>
+				</section>
+			</manifest>
+			<fileset dir="build" excludes="org/vash/vate/server/**,org/vash/vate/startup/**"/>
+			<zipgroupfileset dir="lib" excludes="META-INF/*.SF,META-INF/*.DSA,META-INF/*.RSA"/>
+		</jar>
+		
+		<jar destfile="dist/client-pure/vate-pure-client-shell.jar" filesetmanifest="mergewithoutmain" update="false">
+			<manifest>
+				<attribute name="Built-By" value="William Kendi Nishio"/>
+				<attribute name="Build-Date" value="${build.time.era} ${build.time.date}"/>
+				<attribute name="Created-By" value="${java.version}"/>
+				<attribute name="Main-Class" value="org.vash.vate.client.startup.VTClientStandardStart"/>
+				<attribute name="Class-Path" value="."/>
+				<section name="${build.name}">
+					<attribute name="Specification-Title" value="${build.title}"/>
+					<attribute name="Specification-Version" value="${build.version}"/>
+					<attribute name="Specification-Vendor" value="${build.vendor}"/>
+					<attribute name="Implementation-Title" value="${build.title}"/>
+					<attribute name="Implementation-Version" value="${build.version}"/>
+					<attribute name="Implementation-Vendor" value="${build.vendor}"/>
+				</section>
+			</manifest>
+			<fileset dir="build" excludes="org/vash/vate/server/**,org/vash/vate/startup/**"/>
+			<zipgroupfileset dir="lib" excludes="META-INF/*.SF,META-INF/*.DSA,META-INF/*.RSA"/>
+		</jar>
+		
+		<jar destfile="dist/client-pure/vate-pure-client-agent.jar" filesetmanifest="mergewithoutmain" update="false">
+			<manifest>
+				<attribute name="Built-By" value="William Kendi Nishio"/>
+				<attribute name="Build-Date" value="${build.time.era} ${build.time.date}"/>
+				<attribute name="Created-By" value="${java.version}"/>
+				<attribute name="Main-Class" value="org.vash.vate.client.startup.VTClientAgentStandardStart"/>
+				<attribute name="Class-Path" value="."/>
+				<section name="${build.name}">
+					<attribute name="Specification-Title" value="${build.title}"/>
+					<attribute name="Specification-Version" value="${build.version}"/>
+					<attribute name="Specification-Vendor" value="${build.vendor}"/>
+					<attribute name="Implementation-Title" value="${build.title}"/>
+					<attribute name="Implementation-Version" value="${build.version}"/>
+					<attribute name="Implementation-Vendor" value="${build.vendor}"/>
+				</section>
+			</manifest>
+			<fileset dir="build" excludes="org/vash/vate/server/**,org/vash/vate/startup/**"/>
+			<zipgroupfileset dir="lib" excludes="META-INF/*.SF,META-INF/*.DSA,META-INF/*.RSA"/>
+		</jar>
+		
+		<delete dir="dist/server-pure"/>
+		<mkdir dir="dist/server-pure"/>
+		<copy todir="dist/server-pure" overwrite="true">
+			<fileset dir="script/server"/>
+			<fileset dir="util"/>
+			<fileset dir="doc"/>
+			<fileset dir="conf/server"/>
+		</copy>
+			
+		<jar destfile="dist/server-pure/vate-pure-server-console.jar" filesetmanifest="mergewithoutmain" update="false">
+			<manifest>
+				<attribute name="Built-By" value="William Kendi Nishio"/>
+				<attribute name="Build-Date" value="${build.time.era} ${build.time.date}"/>
+				<attribute name="Created-By" value="${java.version}"/>
+				<attribute name="Main-Class" value="org.vash.vate.server.startup.VTServerGraphicalStart"/>
+				<attribute name="Class-Path" value="."/>
+				<section name="${build.name}">
+					<attribute name="Specification-Title" value="${build.title}"/>
+					<attribute name="Specification-Version" value="${build.version}"/>
+					<attribute name="Specification-Vendor" value="${build.vendor}"/>
+					<attribute name="Implementation-Title" value="${build.title}"/>
+					<attribute name="Implementation-Version" value="${build.version}"/>
+					<attribute name="Implementation-Vendor" value="${build.vendor}"/>
+				</section>
+			</manifest>
+			<fileset dir="build" excludes="org/vash/vate/client/**,org/vash/vate/startup/**"/>
+			<zipgroupfileset dir="lib" excludes="META-INF/*.SF,META-INF/*.DSA,META-INF/*.RSA"/>
+		</jar>
+		
+		<jar destfile="dist/server-pure/vate-pure-server-shell.jar" filesetmanifest="mergewithoutmain" update="false">
+			<manifest>
+				<attribute name="Built-By" value="William Kendi Nishio"/>
+				<attribute name="Build-Date" value="${build.time.era} ${build.time.date}"/>
+				<attribute name="Created-By" value="${java.version}"/>
+				<attribute name="Main-Class" value="org.vash.vate.server.startup.VTServerStandardStart"/>
+				<attribute name="Class-Path" value="."/>
+				<section name="${build.name}">
+					<attribute name="Specification-Title" value="${build.title}"/>
+					<attribute name="Specification-Version" value="${build.version}"/>
+					<attribute name="Specification-Vendor" value="${build.vendor}"/>
+					<attribute name="Implementation-Title" value="${build.title}"/>
+					<attribute name="Implementation-Version" value="${build.version}"/>
+					<attribute name="Implementation-Vendor" value="${build.vendor}"/>
+				</section>
+			</manifest>
+			<fileset dir="build" excludes="org/vash/vate/client/**,org/vash/vate/startup/**"/>
+			<zipgroupfileset dir="lib" excludes="META-INF/*.SF,META-INF/*.DSA,META-INF/*.RSA"/>
+		</jar>
+		
+		<jar destfile="dist/server-pure/vate-pure-server-daemon.jar" filesetmanifest="mergewithoutmain" update="false">
+			<manifest>
+				<attribute name="Built-By" value="William Kendi Nishio"/>
+				<attribute name="Build-Date" value="${build.time.era} ${build.time.date}"/>
+				<attribute name="Created-By" value="${java.version}"/>
+				<attribute name="Main-Class" value="org.vash.vate.server.startup.VTServerDaemonStandardStart"/>
+				<attribute name="Class-Path" value="."/>
+				<section name="${build.name}">
+					<attribute name="Specification-Title" value="${build.title}"/>
+					<attribute name="Specification-Version" value="${build.version}"/>
+					<attribute name="Specification-Vendor" value="${build.vendor}"/>
+					<attribute name="Implementation-Title" value="${build.title}"/>
+					<attribute name="Implementation-Version" value="${build.version}"/>
+					<attribute name="Implementation-Vendor" value="${build.vendor}"/>
+				</section>
+			</manifest>
+			<fileset dir="build" excludes="org/vash/vate/client/**,org/vash/vate/startup/**"/>
+			<zipgroupfileset dir="lib" excludes="META-INF/*.SF,META-INF/*.DSA,META-INF/*.RSA"/>
+		</jar>
+		
+	</target>
+	
+</project>
