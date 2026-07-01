@@ -74,10 +74,11 @@ public class UDPRelayServer implements Runnable {
 		relayPort = client_sock.getLocalPort();
 		relayIP = client_sock.getLocalAddress();
 
-		if (relayIP.getHostAddress().equals("0.0.0.0") || relayIP.getHostAddress().equals("::")
-				|| relayIP.getHostAddress().equals("::0") || relayIP.getHostAddress().equals("0:0:0:0:0:0:0:0")
-				|| relayIP.getHostAddress().equals("00:00:00:00:00:00:00:00")
-				|| relayIP.getHostAddress().equals("0000:0000:0000:0000:0000:0000:0000:0000"))
+//		if (relayIP.getHostAddress().equals("0.0.0.0") || relayIP.getHostAddress().equals("::")
+//				|| relayIP.getHostAddress().equals("::0") || relayIP.getHostAddress().equals("0:0:0:0:0:0:0:0")
+//				|| relayIP.getHostAddress().equals("00:00:00:00:00:00:00:00")
+//				|| relayIP.getHostAddress().equals("0000:0000:0000:0000:0000:0000:0000:0000"))
+		if (relayIP.isAnyLocalAddress())
 		{
       try
       {
@@ -130,10 +131,11 @@ public class UDPRelayServer implements Runnable {
 	    relayPort = client_sock.getLocalPort();
 	    relayIP = client_sock.getLocalAddress();
 
-	    if (relayIP.getHostAddress().equals("0.0.0.0") || relayIP.getHostAddress().equals("::")
-	        || relayIP.getHostAddress().equals("::0") || relayIP.getHostAddress().equals("0:0:0:0:0:0:0:0")
-	        || relayIP.getHostAddress().equals("00:00:00:00:00:00:00:00")
-	        || relayIP.getHostAddress().equals("0000:0000:0000:0000:0000:0000:0000:0000"))
+//	    if (relayIP.getHostAddress().equals("0.0.0.0") || relayIP.getHostAddress().equals("::")
+//	        || relayIP.getHostAddress().equals("::0") || relayIP.getHostAddress().equals("0:0:0:0:0:0:0:0")
+//	        || relayIP.getHostAddress().equals("00:00:00:00:00:00:00:00")
+//	        || relayIP.getHostAddress().equals("0000:0000:0000:0000:0000:0000:0000:0000"))
+	    if (relayIP.isAnyLocalAddress())
 	    {
 	      try
 	      {

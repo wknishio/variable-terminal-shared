@@ -482,12 +482,15 @@ public class ProxyServer implements Runnable {
 	}
 
 	private void onUDP(ProxyMessage msg) throws IOException {
-		if (msg.ip.getHostAddress().equals("0.0.0.0") || msg.ip.getHostAddress().equals("::")
-				|| msg.ip.getHostAddress().equals("::0") || msg.ip.getHostAddress().equals("0:0:0:0:0:0:0:0")
-				|| msg.ip.getHostAddress().equals("00:00:00:00:00:00:00:00")
-				|| msg.ip.getHostAddress().equals("0000:0000:0000:0000:0000:0000:0000:0000"))
-
-			msg.ip = sock.getInetAddress();
+//		if (msg.ip.getHostAddress().equals("0.0.0.0") || msg.ip.getHostAddress().equals("::")
+//				|| msg.ip.getHostAddress().equals("::0") || msg.ip.getHostAddress().equals("0:0:0:0:0:0:0:0")
+//				|| msg.ip.getHostAddress().equals("00:00:00:00:00:00:00:00")
+//				|| msg.ip.getHostAddress().equals("0000:0000:0000:0000:0000:0000:0000:0000"))
+//			msg.ip = sock.getInetAddress();
+	  if (msg.ip.isAnyLocalAddress())
+	  {
+	    msg.ip = sock.getInetAddress();
+	  }
 		// LOG.info(connectionId + " Creating UDP relay server for " + msg.ip +
 		// ":" + msg.port);
 		relayServer = new UDPRelayServer(msg.ip, msg.port, Thread.currentThread(), sock, auth, proxy, 0);

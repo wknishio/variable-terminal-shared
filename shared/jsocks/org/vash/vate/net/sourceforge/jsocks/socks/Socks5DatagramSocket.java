@@ -120,10 +120,11 @@ public class Socks5DatagramSocket extends DatagramSocket {
 		
 		relayIP = msg.ip;
 		
-		if (relayIP.getHostAddress().equals("0.0.0.0") || relayIP.getHostAddress().equals("::")
-				|| relayIP.getHostAddress().equals("::0") || relayIP.getHostAddress().equals("0:0:0:0:0:0:0:0")
-				|| relayIP.getHostAddress().equals("00:00:00:00:00:00:00:00")
-				|| relayIP.getHostAddress().equals("0000:0000:0000:0000:0000:0000:0000:0000"))
+//		if (relayIP.getHostAddress().equals("0.0.0.0") || relayIP.getHostAddress().equals("::")
+//				|| relayIP.getHostAddress().equals("::0") || relayIP.getHostAddress().equals("0:0:0:0:0:0:0:0")
+//				|| relayIP.getHostAddress().equals("00:00:00:00:00:00:00:00")
+//				|| relayIP.getHostAddress().equals("0000:0000:0000:0000:0000:0000:0000:0000"))
+		if (relayIP.isAnyLocalAddress())
 		{
 		  try
       {
@@ -164,10 +165,11 @@ public class Socks5DatagramSocket extends DatagramSocket {
     
     relayIP = msg.ip;
     
-    if (relayIP.getHostAddress().equals("0.0.0.0") || relayIP.getHostAddress().equals("::")
-        || relayIP.getHostAddress().equals("::0") || relayIP.getHostAddress().equals("0:0:0:0:0:0:0:0")
-        || relayIP.getHostAddress().equals("00:00:00:00:00:00:00:00")
-        || relayIP.getHostAddress().equals("0000:0000:0000:0000:0000:0000:0000:0000"))
+//    if (relayIP.getHostAddress().equals("0.0.0.0") || relayIP.getHostAddress().equals("::")
+//        || relayIP.getHostAddress().equals("::0") || relayIP.getHostAddress().equals("0:0:0:0:0:0:0:0")
+//        || relayIP.getHostAddress().equals("00:00:00:00:00:00:00:00")
+//        || relayIP.getHostAddress().equals("0000:0000:0000:0000:0000:0000:0000:0000"))
+    if (relayIP.isAnyLocalAddress())
     {
       try
       {

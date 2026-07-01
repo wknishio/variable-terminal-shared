@@ -226,7 +226,8 @@ public class SocksServerSocket extends ServerSocket {
 		 */
 		if (reply.host.equals("0.0.0.0") || reply.host.equals("::") || reply.host.equals("::0")
 				|| reply.host.equals("0:0:0:0:0:0:0:0") || reply.host.equals("00:00:00:00:00:00:00:00")
-				|| reply.host.equals("0000:0000:0000:0000:0000:0000:0000:0000")) {
+				|| reply.host.equals("0000:0000:0000:0000:0000:0000:0000:0000"))
+		{
 			//localIP = proxy.proxyIP;
 			//localHost = localIP.getHostName();
 		  try

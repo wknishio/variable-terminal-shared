@@ -392,10 +392,11 @@ public class FTPConnectionHandler {
           String host = passiveServer.getInetAddress().getHostAddress();
           int port = passiveServer.getLocalPort();
 
-          if (host.equals("0.0.0.0") || host.equals("::")
-          || host.equals("::0") || host.equals("0:0:0:0:0:0:0:0")
-          || host.equals("00:00:00:00:00:00:00:00")
-          || host.equals("0000:0000:0000:0000:0000:0000:0000:0000"))
+//          if (host.equals("0.0.0.0") || host.equals("::")
+//          || host.equals("::0") || host.equals("0:0:0:0:0:0:0:0")
+//          || host.equals("00:00:00:00:00:00:00:00")
+//          || host.equals("0000:0000:0000:0000:0000:0000:0000:0000"))
+          if (passiveServer.getInetAddress().isAnyLocalAddress())
           {
               // Sends a valid address instead of a wildcard
               host = InetAddress.getLocalHost().getHostAddress();
@@ -540,10 +541,11 @@ public class FTPConnectionHandler {
           String host = passiveServer.getInetAddress().getHostAddress();
           int port = passiveServer.getLocalPort();
 
-          if (host.equals("0.0.0.0") || host.equals("::")
-          || host.equals("::0") || host.equals("0:0:0:0:0:0:0:0")
-          || host.equals("00:00:00:00:00:00:00:00")
-          || host.equals("0000:0000:0000:0000:0000:0000:0000:0000"))
+//          if (host.equals("0.0.0.0") || host.equals("::")
+//          || host.equals("::0") || host.equals("0:0:0:0:0:0:0:0")
+//          || host.equals("00:00:00:00:00:00:00:00")
+//          || host.equals("0000:0000:0000:0000:0000:0000:0000:0000"))
+          if (passiveServer.getInetAddress().isAnyLocalAddress())
           {
               // Sends a valid address instead of a wildcard
               host = InetAddress.getLocalHost().getHostAddress();
