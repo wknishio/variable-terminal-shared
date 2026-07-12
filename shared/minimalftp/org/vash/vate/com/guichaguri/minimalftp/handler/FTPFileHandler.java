@@ -266,7 +266,7 @@ public class FTPFileHandler {
       {
         public void run(String parms) throws IOException
         {
-          long index = start;
+          //long index = start;
           start = 0;
           String path = parms;
           long size = 0;
@@ -277,12 +277,12 @@ public class FTPFileHandler {
           {
             size = fs.getSize(file);
           }
-          if (index <= 0)
-          {
-            index = size;
-          }
+//          if (index <= 0)
+//          {
+//            index = size;
+//          }
           
-          OutputStream outputStream = fs.writeFile(file, index);
+          OutputStream outputStream = fs.writeFile(file, size);
           con.sendResponse(150, "Receiving a file stream for " + path);
           receiveStream(outputStream);
         }
