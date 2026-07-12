@@ -49,22 +49,49 @@
 		<delete file="build/keep"/>
 		<delete file="dist/keep"/>
 		
+		<mkdir dir="build/compat"/>
 		<mkdir dir="build/shared"/>
 		<mkdir dir="build/awt"/>
 		<mkdir dir="build/jna"/>
 		
-		<javac fork="yes" executable="javac" destdir="build/shared" includes="**/*.java" debug="off" source="${javac-spec}" target="${javac-spec}">
+		<delete dir="dist/lib"/>
+		<mkdir dir="dist/lib"/>
+		
+		<javac fork="yes" executable="javac" destdir="build/compat" includes="**/*.java" debug="off" source="${javac-spec}" target="${javac-spec}">
 			<src path="compat"/>
+		</javac>
+		
+		<copy todir="build/compat">
+			<fileset dir="compat" excludes="**/*.java"/>
+		</copy>
+		
+		<jar destfile="dist/lib/vate-compat.jar" update="false">
+			<manifest>
+				<attribute name="Built-By" value="William Kendi Nishio"/>
+				<attribute name="Build-Date" value="${build.time.era} ${build.time.date}"/>
+				<attribute name="Created-By" value="${java.version}"/>
+				<attribute name="Class-Path" value="."/>
+				<section name="${build.name}">
+					<attribute name="Specification-Title" value="${build.title}"/>
+					<attribute name="Specification-Version" value="${build.version}"/>
+					<attribute name="Specification-Vendor" value="${build.vendor}"/>
+					<attribute name="Implementation-Title" value="${build.title}"/>
+					<attribute name="Implementation-Version" value="${build.version}"/>
+					<attribute name="Implementation-Vendor" value="${build.vendor}"/>
+				</section>
+			</manifest>
+			<fileset dir="build/compat"/>
+		</jar>
+		
+		<javac fork="yes" executable="javac" classpath="dist/lib/vate-compat.jar" destdir="build/shared" includes="**/*.java" debug="off" source="${javac-spec}" target="${javac-spec}">
 			<src path="shared"/>
 		</javac>
 		
-		<javac fork="yes" executable="javac" destdir="build/awt" includes="**/*.java" debug="off" source="${javac-spec}" target="${javac-spec}">
-			<src path="compat"/>
+		<javac fork="yes" executable="javac" classpath="dist/lib/vate-compat.jar" destdir="build/awt" includes="**/*.java" debug="off" source="${javac-spec}" target="${javac-spec}">
 			<src path="awt"/>
 		</javac>
 		
-		<javac fork="yes" executable="javac" destdir="build/jna" includes="**/*.java" debug="off" source="${javac-spec}" target="${javac-spec}">
-			<src path="compat"/>
+		<javac fork="yes" executable="javac" classpath="dist/lib/vate-compat.jar" destdir="build/jna" includes="**/*.java" debug="off" source="${javac-spec}" target="${javac-spec}">
 			<src path="jna"/>
 		</javac>
 		
@@ -83,9 +110,6 @@
 	</target>
 	
 	<target name="create_libraries">
-		
-		<delete dir="dist/lib"/>
-		<mkdir dir="dist/lib"/>
 		
 		<jar destfile="dist/lib/vate-shared.jar" update="false">
 			<manifest>
