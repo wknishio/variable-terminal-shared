@@ -52,6 +52,7 @@
 		<mkdir dir="build/compat"/>
 		<mkdir dir="build/shared"/>
 		<mkdir dir="build/awt"/>
+		<mkdir dir="build/sound"/>
 		<mkdir dir="build/jna"/>
 		
 		<delete dir="dist/lib"/>
@@ -62,10 +63,10 @@
 		</javac>
 		
 		<copy todir="build/compat">
-			<fileset dir="compat" excludes="**/*.java"/>
+			<fileset dir="compat/compat" excludes="**/*.java"/>
 		</copy>
 		
-		<jar destfile="dist/lib/vate-compat.jar" update="false">
+		<jar destfile="dist/lib/vate-compat.jar" filesetmanifest="mergewithoutmain" update="false">
 			<manifest>
 				<attribute name="Built-By" value="William Kendi Nishio"/>
 				<attribute name="Build-Date" value="${build.time.era} ${build.time.date}"/>
@@ -91,27 +92,59 @@
 			<src path="awt"/>
 		</javac>
 		
+		<javac fork="yes" executable="javac" classpath="dist/lib/vate-compat.jar" destdir="build/sound" includes="**/*.java" debug="off" source="${javac-spec}" target="${javac-spec}">
+			<src path="sound"/>
+		</javac>
+		
 		<javac fork="yes" executable="javac" classpath="dist/lib/vate-compat.jar" destdir="build/jna" includes="**/*.java" debug="off" source="${javac-spec}" target="${javac-spec}">
 			<src path="jna"/>
 		</javac>
 		
 		<copy todir="build/shared">
-			<fileset dir="shared" excludes="**/*.java"/>
+			<fileset dir="shared/aircompressor" excludes="**/*.java"/>
+			<fileset dir="shared/base85" excludes="**/*.java"/>
+			<fileset dir="shared/beanshell" excludes="**/*.java"/>
+			<fileset dir="shared/bouncycastle" excludes="**/*.java"/>
+			<fileset dir="shared/commons-codec" excludes="**/*.java"/>
+			<fileset dir="shared/commons-httpclient" excludes="**/*.java"/>
+			<fileset dir="shared/commons-io" excludes="**/*.java"/>
+			<fileset dir="shared/commons-lang3" excludes="**/*.java"/>
+			<fileset dir="shared/commons-logging" excludes="**/*.java"/>
+			<fileset dir="shared/commons-rng" excludes="**/*.java"/>
+			<fileset dir="shared/concentus-opus" excludes="**/*.java"/>
+			<fileset dir="shared/infinispan" excludes="**/*.java"/>
+			<fileset dir="shared/jsap" excludes="**/*.java"/>
+			<fileset dir="shared/jsocks" excludes="**/*.java"/>
+			<fileset dir="shared/jzlib" excludes="**/*.java"/>
+			<fileset dir="shared/lz4" excludes="**/*.java"/>
+			<fileset dir="shared/minimalftp" excludes="**/*.java"/>
+			<fileset dir="shared/portmapper" excludes="**/*.java"/>
+			<fileset dir="shared/slf4j-api" excludes="**/*.java"/>
+			<fileset dir="shared/slf4j-nop" excludes="**/*.java"/>
+			<fileset dir="shared/snappy" excludes="**/*.java"/>
+			<fileset dir="shared/throttle" excludes="**/*.java"/>
 		</copy>
 		
 		<copy todir="build/awt">
-			<fileset dir="awt" excludes="**/*.java"/>
+			<fileset dir="awt/bric" excludes="**/*.java"/>
+			<fileset dir="awt/javapng" excludes="**/*.java"/>
+			<fileset dir="awt/lanterna" excludes="**/*.java"/>
+			<fileset dir="awt/pngencoder" excludes="**/*.java"/>
 		</copy>
-			
+		
+		<copy todir="build/sound">
+			<fileset dir="sound/jspeex" excludes="**/*.java"/>
+		</copy>
+		
 		<copy todir="build/jna">
-			<fileset dir="jna" excludes="**/*.java"/>
+			<fileset dir="jna/jna" excludes="**/*.java"/>
 		</copy>
 		
 	</target>
 	
 	<target name="create_libraries">
 		
-		<jar destfile="dist/lib/vate-shared.jar" update="false">
+		<jar destfile="dist/lib/vate-shared.jar" filesetmanifest="mergewithoutmain" update="false">
 			<manifest>
 				<attribute name="Built-By" value="William Kendi Nishio"/>
 				<attribute name="Build-Date" value="${build.time.era} ${build.time.date}"/>
@@ -129,7 +162,7 @@
 			<fileset dir="build/shared"/>
 		</jar>
 		
-		<jar destfile="dist/lib/vate-awt.jar" update="false">
+		<jar destfile="dist/lib/vate-awt.jar" filesetmanifest="mergewithoutmain" update="false">
 			<manifest>
 				<attribute name="Built-By" value="William Kendi Nishio"/>
 				<attribute name="Build-Date" value="${build.time.era} ${build.time.date}"/>
@@ -147,7 +180,25 @@
 			<fileset dir="build/awt"/>
 		</jar>
 		
-		<jar destfile="dist/lib/vate-jna.jar" update="false">
+		<jar destfile="dist/lib/vate-sound.jar" filesetmanifest="mergewithoutmain" update="false">
+			<manifest>
+				<attribute name="Built-By" value="William Kendi Nishio"/>
+				<attribute name="Build-Date" value="${build.time.era} ${build.time.date}"/>
+				<attribute name="Created-By" value="${java.version}"/>
+				<attribute name="Class-Path" value="."/>
+				<section name="${build.name}">
+					<attribute name="Specification-Title" value="${build.title}"/>
+					<attribute name="Specification-Version" value="${build.version}"/>
+					<attribute name="Specification-Vendor" value="${build.vendor}"/>
+					<attribute name="Implementation-Title" value="${build.title}"/>
+					<attribute name="Implementation-Version" value="${build.version}"/>
+					<attribute name="Implementation-Vendor" value="${build.vendor}"/>
+				</section>
+			</manifest>
+			<fileset dir="build/sound"/>
+		</jar>
+		
+		<jar destfile="dist/lib/vate-jna.jar" filesetmanifest="mergewithoutmain" update="false">
 			<manifest>
 				<attribute name="Built-By" value="William Kendi Nishio"/>
 				<attribute name="Build-Date" value="${build.time.era} ${build.time.date}"/>

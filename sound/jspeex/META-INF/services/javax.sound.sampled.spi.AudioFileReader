@@ -1,0 +1,2 @@
+# Providers of Speex sound file-reading services
+org.vash.vate.org.xiph.speex.spi.SpeexAudioFileReader

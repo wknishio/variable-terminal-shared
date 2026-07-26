@@ -1,0 +1,2 @@
+# Providers of Speex sound file-writing services
+org.vash.vate.org.xiph.speex.spi.SpeexAudioFileWriter

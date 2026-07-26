@@ -16,6 +16,7 @@
 	<classpathentry kind="src" path="shared/commons-lang3"/>
 	<classpathentry kind="src" path="shared/commons-logging"/>
 	<classpathentry kind="src" path="shared/commons-rng"/>
+	<classpathentry kind="src" path="shared/concentus-opus"/>
 	<classpathentry kind="src" path="shared/infinispan"/>
 	<classpathentry kind="src" path="shared/jsap"/>
 	<classpathentry kind="src" path="shared/jsocks"/>
@@ -27,6 +28,7 @@
 	<classpathentry kind="src" path="shared/slf4j-nop"/>
 	<classpathentry kind="src" path="shared/snappy"/>
 	<classpathentry kind="src" path="shared/throttle"/>
+	<classpathentry kind="src" path="sound/jspeex"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/J2SE-1.5"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
