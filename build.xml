@@ -111,7 +111,6 @@
 			<fileset dir="shared/commons-lang3" excludes="**/*.java"/>
 			<fileset dir="shared/commons-logging" excludes="**/*.java"/>
 			<fileset dir="shared/commons-rng" excludes="**/*.java"/>
-			<fileset dir="shared/concentus-opus" excludes="**/*.java"/>
 			<fileset dir="shared/infinispan" excludes="**/*.java"/>
 			<fileset dir="shared/jsap" excludes="**/*.java"/>
 			<fileset dir="shared/jsocks" excludes="**/*.java"/>

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="compat/compat"/>
 	<classpathentry kind="src" path="awt/bric"/>
 	<classpathentry kind="src" path="awt/javapng"/>
 	<classpathentry kind="src" path="awt/lanterna"/>
 	<classpathentry kind="src" path="awt/pngencoder"/>
+	<classpathentry kind="src" path="compat/compat"/>
 	<classpathentry kind="src" path="jna/jna"/>
 	<classpathentry kind="src" path="shared/aircompressor"/>
 	<classpathentry kind="src" path="shared/base85"/>
@@ -16,7 +16,6 @@
 	<classpathentry kind="src" path="shared/commons-lang3"/>
 	<classpathentry kind="src" path="shared/commons-logging"/>
 	<classpathentry kind="src" path="shared/commons-rng"/>
-	<classpathentry kind="src" path="shared/concentus-opus"/>
 	<classpathentry kind="src" path="shared/infinispan"/>
 	<classpathentry kind="src" path="shared/jsap"/>
 	<classpathentry kind="src" path="shared/jsocks"/>
