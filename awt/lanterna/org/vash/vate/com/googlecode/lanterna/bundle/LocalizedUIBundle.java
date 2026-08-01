@@ -26,7 +26,7 @@ import java.util.Locale;
  */
 public class LocalizedUIBundle extends BundleLocator {
 
-    private static final LocalizedUIBundle MY_BUNDLE = new LocalizedUIBundle("multilang.lanterna-ui");
+    private static final LocalizedUIBundle MY_BUNDLE = new LocalizedUIBundle("org.vash.vate.com.googlecode.lanterna.bundle.lanterna-ui");
 
     public static String get(String key, String... parameters) {
         return get(Locale.getDefault(), key, parameters);
