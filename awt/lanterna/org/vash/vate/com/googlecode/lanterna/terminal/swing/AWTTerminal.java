@@ -73,7 +73,7 @@ public class AWTTerminal extends Panel implements IOSafeTerminal {
         this(TerminalEmulatorDeviceConfiguration.getDefault(),
                 AWTTerminalFontConfiguration.getDefault(),
                 TerminalEmulatorColorConfiguration.getDefault(),
-                scrollController, lastLineBackground);
+                scrollController);
     }
 
     /**
@@ -85,10 +85,9 @@ public class AWTTerminal extends Panel implements IOSafeTerminal {
     public AWTTerminal(
             TerminalEmulatorDeviceConfiguration deviceConfiguration,
             AWTTerminalFontConfiguration fontConfiguration,
-            TerminalEmulatorColorConfiguration colorConfiguration,
-            java.awt.Color lastLineBackground) {
+            TerminalEmulatorColorConfiguration colorConfiguration) {
 
-        this(null, deviceConfiguration, fontConfiguration, colorConfiguration, lastLineBackground);
+        this(null, deviceConfiguration, fontConfiguration, colorConfiguration);
     }
 
     /**
@@ -104,15 +103,13 @@ public class AWTTerminal extends Panel implements IOSafeTerminal {
             TerminalSize initialTerminalSize,
             TerminalEmulatorDeviceConfiguration deviceConfiguration,
             AWTTerminalFontConfiguration fontConfiguration,
-            TerminalEmulatorColorConfiguration colorConfiguration,
-            java.awt.Color lastLineBackground) {
+            TerminalEmulatorColorConfiguration colorConfiguration) {
 
         this(initialTerminalSize,
                 deviceConfiguration,
                 fontConfiguration,
                 colorConfiguration,
-                new TerminalScrollController.Null(),
-                lastLineBackground);
+                new TerminalScrollController.Null());
     }
 
     /**
@@ -129,10 +126,9 @@ public class AWTTerminal extends Panel implements IOSafeTerminal {
             TerminalEmulatorDeviceConfiguration deviceConfiguration,
             AWTTerminalFontConfiguration fontConfiguration,
             TerminalEmulatorColorConfiguration colorConfiguration,
-            TerminalScrollController scrollController,
-            java.awt.Color lastLineBackground) {
+            TerminalScrollController scrollController) {
 
-        this(null, deviceConfiguration, fontConfiguration, colorConfiguration, scrollController, lastLineBackground);
+        this(null, deviceConfiguration, fontConfiguration, colorConfiguration, scrollController);
     }
 
 
@@ -155,8 +151,7 @@ public class AWTTerminal extends Panel implements IOSafeTerminal {
             TerminalEmulatorDeviceConfiguration deviceConfiguration,
             AWTTerminalFontConfiguration fontConfiguration,
             TerminalEmulatorColorConfiguration colorConfiguration,
-            TerminalScrollController scrollController,
-            java.awt.Color lastLineBackground) {
+            TerminalScrollController scrollController) {
 
         //Enforce valid values on the input parameters
         if(deviceConfiguration == null) {
@@ -189,8 +184,7 @@ public class AWTTerminal extends Panel implements IOSafeTerminal {
                 initialTerminalSize,
                 deviceConfiguration,
                 colorConfiguration,
-                scrollController,
-                lastLineBackground);
+                scrollController);
         
         inputMethodRequests = new TerminalInputMethodRequests(this, terminalImplementation);
     }

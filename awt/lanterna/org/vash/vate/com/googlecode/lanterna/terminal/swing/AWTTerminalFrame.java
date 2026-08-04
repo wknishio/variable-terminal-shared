@@ -89,9 +89,8 @@ public class AWTTerminalFrame extends Frame implements IOSafeTerminal {
                             TerminalEmulatorDeviceConfiguration deviceConfiguration,
                             AWTTerminalFontConfiguration fontConfiguration,
                             TerminalEmulatorColorConfiguration colorConfiguration,
-                            java.awt.Color lastLineBackground,
                             TerminalEmulatorAutoCloseTrigger... autoCloseTriggers) {
-        this(title, null, deviceConfiguration, fontConfiguration, colorConfiguration, lastLineBackground, autoCloseTriggers);
+        this(title, null, deviceConfiguration, fontConfiguration, colorConfiguration, autoCloseTriggers);
     }
 
     /**
@@ -108,11 +107,10 @@ public class AWTTerminalFrame extends Frame implements IOSafeTerminal {
                             TerminalEmulatorDeviceConfiguration deviceConfiguration,
                             AWTTerminalFontConfiguration fontConfiguration,
                             TerminalEmulatorColorConfiguration colorConfiguration,
-                            java.awt.Color lastLineBackground,
                             TerminalEmulatorAutoCloseTrigger... autoCloseTriggers
                             ) {
         this(title,
-                new AWTTerminal(terminalSize, deviceConfiguration, fontConfiguration, colorConfiguration, lastLineBackground),
+                new AWTTerminal(terminalSize, deviceConfiguration, fontConfiguration, colorConfiguration),
                 autoCloseTriggers);
     }
     

@@ -58,7 +58,7 @@ public class DefaultTerminalFactory implements TerminalFactory {
     private boolean forceTextTerminal;
     private boolean preferTerminalEmulator;
     private boolean forceAWTOverSwing;
-    private java.awt.Color lastLineBackground;
+    //private java.awt.Color lastLineBackground;
     private int telnetPort;
     private int inputTimeout;
     private String title;
@@ -139,7 +139,7 @@ public class DefaultTerminalFactory implements TerminalFactory {
 	            if (!preferTerminalEmulator && mouseCaptureMode != null && telnetPort > 0) {
 	                return createTelnetTerminal();
 	            } else {
-	                return createTerminalEmulator(lastLineBackground);
+	                return createTerminalEmulator();
 	            }
 	        }
     	}
@@ -166,7 +166,7 @@ public class DefaultTerminalFactory implements TerminalFactory {
 	            if (!preferTerminalEmulator && mouseCaptureMode != null && telnetPort > 0) {
 	                return createTelnetTerminal();
 	            } else {
-	                return createTerminalEmulator(lastLineBackground);
+	                return createTerminalEmulator();
 	            }
 	        }
     	}
@@ -177,7 +177,7 @@ public class DefaultTerminalFactory implements TerminalFactory {
      * available on the system
      * @return New terminal emulator exposed as a {@link Terminal} interface
      */
-    public Terminal createTerminalEmulator(java.awt.Color lastLineBackground) {
+    public Terminal createTerminalEmulator() {
         Terminal terminal;
         if (!forceAWTOverSwing && hasSwing())
         {
@@ -190,7 +190,7 @@ public class DefaultTerminalFactory implements TerminalFactory {
         }
         else
         {
-          AWTTerminalFrame awtTerminal = createAWTTerminal(lastLineBackground);
+          AWTTerminalFrame awtTerminal = createAWTTerminal();
           if (this.mouseCaptureMode != null)
           {
             awtTerminal.getTerminal().getTerminalImplementation().setMouseCaptureMode(mouseCaptureMode);
@@ -207,18 +207,17 @@ public class DefaultTerminalFactory implements TerminalFactory {
     
     public AWTTerminalPanel createAWTTerminalPanel(Container parent, java.awt.Color lastLineBackground) {
       return new AWTTerminalPanel(parent,
-          new AWTTerminal(initialTerminalSize, deviceConfiguration, fontConfiguration, colorConfiguration, lastLineBackground),
+          new AWTTerminal(initialTerminalSize, deviceConfiguration, fontConfiguration, colorConfiguration),
           autoCloseTriggers.toArray(new TerminalEmulatorAutoCloseTrigger[autoCloseTriggers.size()]));
   }
 
-    public AWTTerminalFrame createAWTTerminal(java.awt.Color lastLineBackground) {
+    public AWTTerminalFrame createAWTTerminal() {
         return new AWTTerminalFrame(
                 title,
                 initialTerminalSize,
                 deviceConfiguration,
                 fontConfiguration,
                 colorConfiguration,
-                lastLineBackground,
                 autoCloseTriggers.toArray(new TerminalEmulatorAutoCloseTrigger[autoCloseTriggers.size()]));
     }
 
@@ -409,10 +408,10 @@ public class DefaultTerminalFactory implements TerminalFactory {
         return this;
     }
     
-    public DefaultTerminalFactory setLastLineBackground(java.awt.Color lastLineBackground) {
-      this.lastLineBackground = lastLineBackground;
-      return this;
-  }
+//    public DefaultTerminalFactory setLastLineBackground(java.awt.Color lastLineBackground) {
+//      this.lastLineBackground = lastLineBackground;
+//      return this;
+//    }
 
     /**
      * Controls whether a SwingTerminalFrame shall be automatically shown (.setVisible(true)) immediately after 

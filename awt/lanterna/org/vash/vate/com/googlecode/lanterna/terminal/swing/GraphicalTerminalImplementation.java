@@ -72,7 +72,7 @@ abstract class GraphicalTerminalImplementation implements IOSafeTerminal {
     private boolean blinkOn;
     private boolean bellOn;
     private boolean needFullRedraw;
-    private java.awt.Color lastLineBackground;
+    private java.awt.Color lastLineBackground = Color.DARK_GRAY;
     private java.awt.Color defaultBackground;
 
     private TerminalPosition lastDrawnCursorPosition;
@@ -124,8 +124,7 @@ abstract class GraphicalTerminalImplementation implements IOSafeTerminal {
             TerminalSize initialTerminalSize,
             TerminalEmulatorDeviceConfiguration deviceConfiguration,
             TerminalEmulatorColorConfiguration colorConfiguration,
-            TerminalScrollController scrollController,
-            java.awt.Color lastLineBackground) {
+            TerminalScrollController scrollController) {
 
         //This is kind of meaningless since we don't know how large the
         //component is at this point, but we should set it to something
@@ -152,7 +151,7 @@ abstract class GraphicalTerminalImplementation implements IOSafeTerminal {
         this.hasBlinkingText = false;   // Assume initial content doesn't have any blinking text
         this.blinkOn = true;
         this.needFullRedraw = false;
-        this.lastLineBackground = lastLineBackground;
+        //this.lastLineBackground = lastLineBackground;
 
         virtualTerminal.setBacklogSize(deviceConfiguration.getLineBufferScrollbackSize());
     }
@@ -338,11 +337,8 @@ abstract class GraphicalTerminalImplementation implements IOSafeTerminal {
         
         int leftoverWidth = getWidth() % getFontWidth();
         //componentGraphics.setColor(Color.BLACK);
-        if(leftoverWidth > 0)
+        if (leftoverWidth > 0)
         {
-          //componentGraphics.setColor(Color.BLACK);
-          //componentGraphics.fillRect(getWidth() - leftoverWidth, 0, leftoverWidth, getHeight() - getFontHeight() - leftoverHeight);
-          
           if (lastLineBackground != null)
           {
             componentGraphics.setColor(lastLineBackground);
@@ -350,14 +346,14 @@ abstract class GraphicalTerminalImplementation implements IOSafeTerminal {
           }
         }
         
-        if (leftoverHeight > 0)
-        {
-          if (lastLineBackground != null)
-          {
-            componentGraphics.setColor(lastLineBackground);
-            componentGraphics.fillRect(0, getHeight() - leftoverHeight, getWidth(), leftoverHeight);
-          }
-        }
+//        if (leftoverHeight > 0)
+//        {
+//          if (lastLineBackground != null)
+//          {
+//            componentGraphics.setColor(lastLineBackground);
+//            componentGraphics.fillRect(0, getHeight() - leftoverHeight, getWidth(), leftoverHeight);
+//          }
+//        }
         
         //0, 0, getWidth(), getHeight(), 0, 0, getWidth(), getHeight(), null);
         this.lastComponentWidth = width;
