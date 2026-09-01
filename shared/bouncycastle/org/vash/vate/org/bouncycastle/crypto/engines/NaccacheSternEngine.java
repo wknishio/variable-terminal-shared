@@ -5,8 +5,11 @@ import java.util.Vector;
 
 import org.vash.vate.org.bouncycastle.crypto.AsymmetricBlockCipher;
 import org.vash.vate.org.bouncycastle.crypto.CipherParameters;
+import org.vash.vate.org.bouncycastle.crypto.CryptoServicesRegistrar;
 import org.vash.vate.org.bouncycastle.crypto.DataLengthException;
 import org.vash.vate.org.bouncycastle.crypto.InvalidCipherTextException;
+import org.vash.vate.org.bouncycastle.crypto.constraints.ConstraintUtils;
+import org.vash.vate.org.bouncycastle.crypto.constraints.DefaultServiceProperties;
 import org.vash.vate.org.bouncycastle.crypto.params.NaccacheSternKeyParameters;
 import org.vash.vate.org.bouncycastle.crypto.params.NaccacheSternPrivateKeyParameters;
 import org.vash.vate.org.bouncycastle.crypto.params.ParametersWithRandom;
@@ -82,6 +85,9 @@ public class NaccacheSternEngine
                 }
             }
         }
+
+        CryptoServicesRegistrar.checkConstraints(new DefaultServiceProperties(
+                "NaccacheStern", ConstraintUtils.bitsOfSecurityFor(key.getModulus()), param, Utils.getPurpose(forEncryption)));
     }
 
     public void setDebug(boolean debug)

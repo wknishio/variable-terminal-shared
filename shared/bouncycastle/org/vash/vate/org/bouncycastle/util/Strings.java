@@ -8,10 +8,8 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
-
-import org.vash.vate.org.bouncycastle.util.encoders.UTF8;
-
 import java.util.Iterator;
+import org.vash.vate.org.bouncycastle.util.encoders.UTF8;
 
 public final class Strings
 {

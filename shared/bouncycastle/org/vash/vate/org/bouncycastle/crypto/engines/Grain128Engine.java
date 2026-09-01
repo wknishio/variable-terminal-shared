@@ -1,8 +1,11 @@
 package org.vash.vate.org.bouncycastle.crypto.engines;
 
 import org.vash.vate.org.bouncycastle.crypto.CipherParameters;
+import org.vash.vate.org.bouncycastle.crypto.CryptoServicesRegistrar;
 import org.vash.vate.org.bouncycastle.crypto.DataLengthException;
+import org.vash.vate.org.bouncycastle.crypto.OutputLengthException;
 import org.vash.vate.org.bouncycastle.crypto.StreamCipher;
+import org.vash.vate.org.bouncycastle.crypto.constraints.DefaultServiceProperties;
 import org.vash.vate.org.bouncycastle.crypto.params.KeyParameter;
 import org.vash.vate.org.bouncycastle.crypto.params.ParametersWithIV;
 
@@ -23,17 +26,17 @@ public class Grain128Engine
      * Variables to hold the state of the engine during encryption and
      * decryption
      */
-    private final byte[] workingKey = new byte[16];
-    private final byte[] workingIV = new byte[16];
-    private final byte[] out = new byte[4];
-    private final int[] lfsr = new int[STATE_SIZE];
-    private final int[] nfsr = new int[STATE_SIZE];
+    private byte[] workingKey;
+    private byte[] workingIV;
+    private byte[] out;
+    private int[] lfsr;
+    private int[] nfsr;
     private int output;
     private int index = 4;
 
-    //private boolean initialised = false;
+    private boolean initialised = false;
 
-    public final String getAlgorithmName()
+    public String getAlgorithmName()
     {
         return "Grain-128";
     }
@@ -45,10 +48,10 @@ public class Grain128Engine
      * @param params        The parameters required to set up the cipher.
      * @throws IllegalArgumentException If the params argument is inappropriate.
      */
-    public final void init(boolean forEncryption, CipherParameters params)
+    public void init(boolean forEncryption, CipherParameters params)
         throws IllegalArgumentException
     {
-        /**
+        /*
          * Grain encryption and decryption is completely symmetrical, so the
          * 'forEncryption' is irrelevant.
          */
@@ -65,28 +68,37 @@ public class Grain128Engine
         if (iv == null || iv.length != 12)
         {
             throw new IllegalArgumentException(
-                "Grain-128  requires exactly 12 bytes of IV");
+                "Grain-128 requires exactly 12 bytes of IV");
         }
 
         if (!(ivParams.getParameters() instanceof KeyParameter))
         {
             throw new IllegalArgumentException(
-                "Grain-128 Init parameters must include a key");
+                "Grain-128 init parameters must include a key");
         }
 
         KeyParameter key = (KeyParameter)ivParams.getParameters();
+        byte[] keyBytes = key.getKey();
+        if (keyBytes.length != 16)
+        {
+            throw new IllegalArgumentException(
+                  "Grain-128 key must be 128 bits long");
+        }
 
-        /**
+        CryptoServicesRegistrar.checkConstraints(new DefaultServiceProperties(
+                this.getAlgorithmName(), 128, params, Utils.getPurpose(forEncryption)));
+
+        /*
          * Initialize variables.
          */
-        //workingIV = new byte[key.getKey().length];
-        //workingKey = new byte[key.getKey().length];
-        //lfsr = new int[STATE_SIZE];
-        //nfsr = new int[STATE_SIZE];
-        //out = new byte[4];
+        workingIV = new byte[keyBytes.length];
+        workingKey = new byte[keyBytes.length];
+        lfsr = new int[STATE_SIZE];
+        nfsr = new int[STATE_SIZE];
+        out = new byte[4];
 
         System.arraycopy(iv, 0, workingIV, 0, iv.length);
-        System.arraycopy(key.getKey(), 0, workingKey, 0, key.getKey().length);
+        System.arraycopy(keyBytes, 0, workingKey, 0, keyBytes.length);
 
         reset();
     }
@@ -94,15 +106,15 @@ public class Grain128Engine
     /**
      * 256 clocks initialization phase.
      */
-    private final void initGrain()
+    private void initGrain()
     {
         for (int i = 0; i < 8; i++)
         {
             output = getOutput();
-            shift(nfsr, getOutputNFSR() ^ lfsr[0] ^ output);
-            shift(lfsr, getOutputLFSR() ^ output);
+            nfsr = shift(nfsr, getOutputNFSR() ^ lfsr[0] ^ output);
+            lfsr = shift(lfsr, getOutputLFSR() ^ output);
         }
-        //initialised = true;
+        initialised = true;
     }
 
     /**
@@ -110,7 +122,7 @@ public class Grain128Engine
      *
      * @return Output from NFSR.
      */
-    private final int getOutputNFSR()
+    private int getOutputNFSR()
     {
         int b0 = nfsr[0];
         int b3 = nfsr[0] >>> 3 | nfsr[1] << 29;
@@ -141,7 +153,7 @@ public class Grain128Engine
      *
      * @return Output from LFSR.
      */
-    private final int getOutputLFSR()
+    private int getOutputLFSR()
     {
         int s0 = lfsr[0];
         int s7 = lfsr[0] >>> 7 | lfsr[1] << 25;
@@ -158,7 +170,7 @@ public class Grain128Engine
      *
      * @return Output from h(x).
      */
-    private final int getOutput()
+    private int getOutput()
     {
         int b2 = nfsr[0] >>> 2 | nfsr[1] << 30;
         int b12 = nfsr[0] >>> 12 | nfsr[1] << 20;
@@ -176,9 +188,9 @@ public class Grain128Engine
         int s60 = lfsr[1] >>> 28 | lfsr[2] << 4;
         int s79 = lfsr[2] >>> 15 | lfsr[3] << 17;
         int s93 = lfsr[2] >>> 29 | lfsr[3] << 3;
-        int s95 = lfsr[2] >>> 31 | lfsr[3] << 1;
+        int s94 = lfsr[2] >>> 31 | lfsr[3] << 1;
 
-        return b12 & s8 ^ s13 & s20 ^ b95 & s42 ^ s60 & s79 ^ b12 & b95 & s95 ^ s93
+        return b12 & s8 ^ s13 & s20 ^ b95 & s42 ^ s60 & s79 ^ b12 & b95 & s94 ^ s93
             ^ b2 ^ b15 ^ b36 ^ b45 ^ b64 ^ b73 ^ b89;
     }
 
@@ -189,14 +201,14 @@ public class Grain128Engine
      * @param val   The value to shift in.
      * @return The shifted array with val added to index.length - 1.
      */
-    private static void shift(int[] array, int val)
+    private int[] shift(int[] array, int val)
     {
         array[0] = array[1];
         array[1] = array[2];
         array[2] = array[3];
         array[3] = val;
 
-        return;
+        return array;
     }
 
     /**
@@ -205,18 +217,16 @@ public class Grain128Engine
      * @param keyBytes The key.
      * @param ivBytes  The IV.
      */
-    private final void setKey(byte[] keyBytes, byte[] ivBytes)
+    private void setKey(byte[] keyBytes, byte[] ivBytes)
     {
         ivBytes[12] = (byte)0xFF;
         ivBytes[13] = (byte)0xFF;
         ivBytes[14] = (byte)0xFF;
         ivBytes[15] = (byte)0xFF;
-        System.arraycopy(ivBytes, 0, workingIV, 0, ivBytes.length);
-        System.arraycopy(keyBytes, 0, workingKey, 0, keyBytes.length);
-        //workingKey = keyBytes;
-        //workingIV = ivBytes;
+        workingKey = keyBytes;
+        workingIV = ivBytes;
 
-        /**
+        /*
          * Load NFSR and LFSR
          */
         int j = 0;
@@ -233,10 +243,26 @@ public class Grain128Engine
         }
     }
 
-    public final int processBytes(byte[] in, int inOff, int len, byte[] out,
+    public int processBytes(byte[] in, int inOff, int len, byte[] out,
                              int outOff)
         throws DataLengthException
     {
+        if (!initialised)
+        {
+            throw new IllegalStateException(getAlgorithmName()
+                + " not initialised");
+        }
+
+        if ((inOff + len) > in.length)
+        {
+            throw new DataLengthException("input buffer too short");
+        }
+
+        if ((outOff + len) > out.length)
+        {
+            throw new OutputLengthException("output buffer too short");
+        }
+
         for (int i = 0; i < len; i++)
         {
             out[outOff + i] = (byte)(in[inOff + i] ^ getKeyStream());
@@ -245,7 +271,7 @@ public class Grain128Engine
         return len;
     }
 
-    public final void reset()
+    public void reset()
     {
         index = 4;
         setKey(workingKey, workingIV);
@@ -255,7 +281,7 @@ public class Grain128Engine
     /**
      * Run Grain one round(i.e. 32 bits).
      */
-    private final void oneRound()
+    private void oneRound()
     {
         output = getOutput();
         out[0] = (byte)output;
@@ -263,16 +289,21 @@ public class Grain128Engine
         out[2] = (byte)(output >> 16);
         out[3] = (byte)(output >> 24);
 
-        shift(nfsr, getOutputNFSR() ^ lfsr[0]);
-        shift(lfsr, getOutputLFSR());
+        nfsr = shift(nfsr, getOutputNFSR() ^ lfsr[0]);
+        lfsr = shift(lfsr, getOutputLFSR());
     }
 
-    public final byte returnByte(byte in)
+    public byte returnByte(byte in)
     {
+        if (!initialised)
+        {
+            throw new IllegalStateException(getAlgorithmName()
+                + " not initialised");
+        }
         return (byte)(in ^ getKeyStream());
     }
 
-    private final byte getKeyStream()
+    private byte getKeyStream()
     {
         if (index > 3)
         {

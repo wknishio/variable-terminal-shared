@@ -1,6 +1,5 @@
 package org.vash.vate.org.bouncycastle.crypto;
 
-
 /**
  * A wrapper class that allows block ciphers to be used to process data in
  * a piecemeal fashion. The BufferedBlockCipher outputs a block only when the
@@ -11,19 +10,20 @@ package org.vash.vate.org.bouncycastle.crypto;
  */
 public class BufferedBlockCipher
 {
-    protected byte[]        buf;
-    protected int           bufOff;
+    protected byte[] buf;
+    protected int bufOff;
 
-    protected boolean       forEncryption;
-    protected BlockCipher   cipher;
+    protected boolean forEncryption;
+    protected BlockCipher cipher;
+    protected MultiBlockCipher mbCipher;
 
-    protected boolean       partialBlockOkay;
-    protected boolean       pgpCFB;
+    protected boolean partialBlockOkay;
+    protected boolean pgpCFB;
 
     /**
      * constructor for subclasses
      */
-    protected BufferedBlockCipher()
+    BufferedBlockCipher()
     {
     }
 
@@ -31,20 +31,31 @@ public class BufferedBlockCipher
      * Create a buffered block cipher without padding.
      *
      * @param cipher the underlying block cipher this buffering object wraps.
+     * @deprecated use the constructor on DefaultBufferedBlockCipher.
      */
     public BufferedBlockCipher(
-        BlockCipher     cipher)
+        BlockCipher cipher)
     {
         this.cipher = cipher;
 
-        buf = new byte[cipher.getBlockSize()];
+        if (cipher instanceof MultiBlockCipher)
+        {
+            this.mbCipher = (MultiBlockCipher)cipher;
+            buf = new byte[mbCipher.getMultiBlockSize()];
+        }
+        else
+        {
+            this.mbCipher = null;
+            buf = new byte[cipher.getBlockSize()];
+        }
+
         bufOff = 0;
 
         //
         // check if we can handle partial blocks on doFinal.
         //
-        String  name = cipher.getAlgorithmName();
-        int     idx = name.indexOf('/') + 1;
+        String name = cipher.getAlgorithmName();
+        int idx = name.indexOf('/') + 1;
 
         pgpCFB = (idx > 0 && name.startsWith("PGP", idx));
 
@@ -72,14 +83,14 @@ public class BufferedBlockCipher
      * initialise the cipher.
      *
      * @param forEncryption if true the cipher is initialised for
-     *  encryption, if false for decryption.
-     * @param params the key and other data required by the cipher.
-     * @exception IllegalArgumentException if the params argument is
-     * inappropriate.
+     *                      encryption, if false for decryption.
+     * @param params        the key and other data required by the cipher.
+     * @throws IllegalArgumentException if the params argument is
+     *                                  inappropriate.
      */
     public void init(
-        boolean             forEncryption,
-        CipherParameters    params)
+        boolean forEncryption,
+        CipherParameters params)
         throws IllegalArgumentException
     {
         this.forEncryption = forEncryption;
@@ -100,7 +111,7 @@ public class BufferedBlockCipher
     }
 
     /**
-     * return the size of the output buffer required for an update 
+     * return the size of the output buffer required for an update
      * an input of len bytes.
      *
      * @param len the length of the input.
@@ -110,7 +121,7 @@ public class BufferedBlockCipher
     public int getUpdateOutputSize(
         int len)
     {
-        int total       = len + bufOff;
+        int total = len + bufOff;
         int leftOver;
 
         if (pgpCFB)
@@ -126,7 +137,7 @@ public class BufferedBlockCipher
         }
         else
         {
-            leftOver    = total % buf.length;
+            leftOver = total % buf.length;
         }
 
         return total - leftOver;
@@ -143,6 +154,11 @@ public class BufferedBlockCipher
     public int getOutputSize(
         int length)
     {
+        if (pgpCFB && forEncryption)
+        {
+            return length + bufOff + (cipher.getBlockSize() + 2);
+        }
+
         // Note: Can assume partialBlockOkay is true for purposes of this calculation
         return length + bufOff;
     }
@@ -169,8 +185,7 @@ public class BufferedBlockCipher
 
         if (bufOff == buf.length)
         {
-            resultLen = cipher.processBlock(buf, 0, out, outOff);
-            bufOff = 0;
+            resultLen = processBuffer(out, outOff);
         }
 
         return resultLen;
@@ -203,7 +218,7 @@ public class BufferedBlockCipher
 
         int blockSize   = getBlockSize();
         int length      = getUpdateOutputSize(len);
-        
+
         if (length > 0)
         {
             if ((outOff + length) > out.length)
@@ -217,20 +232,49 @@ public class BufferedBlockCipher
 
         if (len > gapLen)
         {
-            System.arraycopy(in, inOff, buf, bufOff, gapLen);
-
-            resultLen += cipher.processBlock(buf, 0, out, outOff);
-
-            bufOff = 0;
-            len -= gapLen;
-            inOff += gapLen;
-
-            while (len > buf.length)
+            if (bufOff != 0)
             {
-                resultLen += cipher.processBlock(in, inOff, out, outOff + resultLen);
+                System.arraycopy(in, inOff, buf, bufOff, gapLen);
+                inOff += gapLen;
+                len -= gapLen;
+            }
 
-                len -= blockSize;
-                inOff += blockSize;
+            if (in == out)
+            {
+                in = new byte[len];
+                System.arraycopy(out, inOff, in, 0, len);
+                inOff = 0;
+            }
+
+            // if bufOff non-zero buffer must now be full
+            if (bufOff != 0)
+            {
+                resultLen += processBuffer(out, outOff);
+            }
+
+            if (mbCipher != null)
+            {
+                int blockCount = (len / mbCipher.getMultiBlockSize()) * (mbCipher.getMultiBlockSize() / blockSize);
+
+                if (blockCount > 0)
+                {
+                    resultLen += mbCipher.processBlocks(in, inOff, blockCount, out, outOff + resultLen);
+
+                    int processed = blockCount * blockSize;
+
+                    len -= processed;
+                    inOff += processed;
+                }
+            }
+            else
+            {
+                while (len > buf.length)
+                {
+                    resultLen += cipher.processBlock(in, inOff, out, outOff + resultLen);
+
+                    len -= blockSize;
+                    inOff += blockSize;
+                }
             }
         }
 
@@ -240,30 +284,42 @@ public class BufferedBlockCipher
 
         if (bufOff == buf.length)
         {
-            resultLen += cipher.processBlock(buf, 0, out, outOff + resultLen);
-            bufOff = 0;
+            resultLen += processBuffer(out, outOff + resultLen);
         }
 
         return resultLen;
     }
 
+    private int processBuffer(byte[] out, int outOff)
+    {
+        bufOff = 0;
+        if (mbCipher != null)
+        {
+            return mbCipher.processBlocks(buf, 0, buf.length / mbCipher.getBlockSize(), out, outOff);
+        }
+        else
+        {
+            return cipher.processBlock(buf, 0, out, outOff);
+        }
+    }
+
     /**
      * Process the last block in the buffer.
      *
-     * @param out the array the block currently being held is copied into.
+     * @param out    the array the block currently being held is copied into.
      * @param outOff the offset at which the copying starts.
      * @return the number of output bytes copied to out.
-     * @exception DataLengthException if there is insufficient space in out for
-     * the output, or the input is not block size aligned and should be.
-     * @exception IllegalStateException if the underlying cipher is not
-     * initialised.
-     * @exception InvalidCipherTextException if padding is expected and not found.
-     * @exception DataLengthException if the input is not block size
-     * aligned.
+     * @throws DataLengthException        if there is insufficient space in out for
+     *                                    the output, or the input is not block size aligned and should be.
+     * @throws IllegalStateException      if the underlying cipher is not
+     *                                    initialised.
+     * @throws InvalidCipherTextException if padding is expected and not found.
+     * @throws DataLengthException        if the input is not block size
+     *                                    aligned.
      */
     public int doFinal(
-        byte[]  out,
-        int     outOff)
+        byte[] out,
+        int outOff)
         throws DataLengthException, IllegalStateException, InvalidCipherTextException
     {
         try
@@ -277,15 +333,26 @@ public class BufferedBlockCipher
 
             if (bufOff != 0)
             {
-                if (!partialBlockOkay)
+                int index = 0;
+                if (mbCipher != null)
                 {
-                    throw new DataLengthException("data not block size aligned");
+                    int nBlocks = bufOff / mbCipher.getBlockSize();
+                    resultLen += mbCipher.processBlocks(buf, 0, nBlocks, out, outOff);
+                    index = nBlocks * mbCipher.getBlockSize();
                 }
 
-                cipher.processBlock(buf, 0, buf, 0);
-                resultLen = bufOff;
-                bufOff = 0;
-                System.arraycopy(buf, 0, out, outOff, resultLen);
+                if (bufOff != index)
+                {
+                    if (!partialBlockOkay)
+                    {
+                        throw new DataLengthException("data not block size aligned");
+                    }
+
+                    cipher.processBlock(buf, index, buf, index);
+                    System.arraycopy(buf, index, out, outOff + resultLen, bufOff - index);
+                    resultLen += bufOff - index;
+                    bufOff = 0;
+                }
             }
 
             return resultLen;

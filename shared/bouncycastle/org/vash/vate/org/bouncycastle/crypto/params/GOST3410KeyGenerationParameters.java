@@ -1,8 +1,8 @@
 package org.vash.vate.org.bouncycastle.crypto.params;
 
-import java.security.SecureRandom;
-
 import org.vash.vate.org.bouncycastle.crypto.KeyGenerationParameters;
+
+import java.security.SecureRandom;
 
 public class GOST3410KeyGenerationParameters
         extends KeyGenerationParameters

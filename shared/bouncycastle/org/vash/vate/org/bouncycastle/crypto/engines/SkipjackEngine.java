@@ -2,8 +2,11 @@ package org.vash.vate.org.bouncycastle.crypto.engines;
 
 import org.vash.vate.org.bouncycastle.crypto.BlockCipher;
 import org.vash.vate.org.bouncycastle.crypto.CipherParameters;
+import org.vash.vate.org.bouncycastle.crypto.CryptoServicePurpose;
+import org.vash.vate.org.bouncycastle.crypto.CryptoServicesRegistrar;
 import org.vash.vate.org.bouncycastle.crypto.DataLengthException;
 import org.vash.vate.org.bouncycastle.crypto.OutputLengthException;
+import org.vash.vate.org.bouncycastle.crypto.constraints.DefaultServiceProperties;
 import org.vash.vate.org.bouncycastle.crypto.params.KeyParameter;
 
 /**
@@ -37,6 +40,11 @@ public class SkipjackEngine
     private int[]       key0, key1, key2, key3;
     private boolean     encrypting;
 
+    public SkipjackEngine()
+    {
+        CryptoServicesRegistrar.checkConstraints(new DefaultServiceProperties(getAlgorithmName(), 80));
+    }
+
     /**
      * initialise a SKIPJACK cipher.
      *
@@ -51,7 +59,7 @@ public class SkipjackEngine
     {
         if (!(params instanceof KeyParameter))
         {
-        throw new IllegalArgumentException("invalid parameter passed to SKIPJACK init - " + params.getClass().getName());
+            throw new IllegalArgumentException("invalid parameter passed to SKIPJACK init - " + params.getClass().getName());
         }
 
         byte[] keyBytes = ((KeyParameter)params).getKey();
@@ -73,6 +81,8 @@ public class SkipjackEngine
             key2[i] = keyBytes[(i * 4 + 2) % 10] & 0xff;
             key3[i] = keyBytes[(i * 4 + 3) % 10] & 0xff;
         }
+
+        CryptoServicesRegistrar.checkConstraints(new DefaultServiceProperties(getAlgorithmName(), 80, params, getPurpose()));
     }
 
     public String getAlgorithmName()
@@ -256,5 +266,15 @@ public class SkipjackEngine
         out[outOff + 7] = (byte)(w3);
 
         return BLOCK_SIZE;
+    }
+
+    private CryptoServicePurpose getPurpose()
+    {
+        if (key0 == null)
+        {
+            return CryptoServicePurpose.ANY;
+        }
+
+        return encrypting ? CryptoServicePurpose.ENCRYPTION : CryptoServicePurpose.DECRYPTION;
     }
 }

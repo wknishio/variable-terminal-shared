@@ -1,7 +1,7 @@
 package org.vash.vate.org.bouncycastle.crypto.util;
 
 /**
- * @deprecated use org.bouncycastle.util.pack
+ * @deprecated use org.vash.vate.org.bouncycastle.util.pack
  */
 public abstract class Pack
 {

@@ -7,6 +7,8 @@ import org.vash.vate.org.bouncycastle.crypto.CipherParameters;
 import org.vash.vate.org.bouncycastle.crypto.CryptoServicesRegistrar;
 import org.vash.vate.org.bouncycastle.crypto.DataLengthException;
 import org.vash.vate.org.bouncycastle.crypto.Digest;
+import org.vash.vate.org.bouncycastle.crypto.constraints.ConstraintUtils;
+import org.vash.vate.org.bouncycastle.crypto.constraints.DefaultServiceProperties;
 import org.vash.vate.org.bouncycastle.crypto.params.CramerShoupKeyParameters;
 import org.vash.vate.org.bouncycastle.crypto.params.CramerShoupPrivateKeyParameters;
 import org.vash.vate.org.bouncycastle.crypto.params.CramerShoupPublicKeyParameters;
@@ -65,6 +67,8 @@ public class CramerShoupCoreEngine
 
         this.random = initSecureRandom(forEncryption, providedRandom);
         this.forEncryption = forEncryption;
+
+        CryptoServicesRegistrar.checkConstraints(new DefaultServiceProperties("CramerShoup", ConstraintUtils.bitsOfSecurityFor(key.getParameters().getP()), key, Utils.getPurpose(forEncryption)));
     }
 
     /**

@@ -11,6 +11,32 @@ public class Integers
         0x1F, 0x00, 0x1B, 0x01, 0x1C, 0x0D, 0x17, 0x02, 0x1D, 0x15, 0x13, 0x0E, 0x18, 0x10, 0x03, 0x07,
         0x1E, 0x1A, 0x0C, 0x16, 0x14, 0x12, 0x0F, 0x06, 0x19, 0x0B, 0x11, 0x05, 0x0A, 0x04, 0x09, 0x08 };
 
+    public static int bitCount(int i)
+    {
+        i -= (i >>> 1) & 0x55555555;
+        i = (i & 0x33333333) + ((i >>> 2) & 0x33333333);
+        i = (i + (i >>> 4)) & 0x0f0f0f0f;
+        i += (i >>> 8);
+        i += (i >>> 16);
+        i &= 0x3f;
+        return i;
+    }
+
+    public static int highestOneBit(int i)
+    {
+        i |= (i >>  1);
+        i |= (i >>  2);
+        i |= (i >>  4);
+        i |= (i >>  8);
+        i |= (i >> 16);
+        return i - (i >>> 1);
+    }
+
+    public static int lowestOneBit(int i)
+    {
+        return i & -i;
+    }
+
     public static int numberOfLeadingZeros(int i)
     {
         if (i <= 0)
@@ -50,12 +76,12 @@ public class Integers
 
     public static int rotateLeft(int i, int distance)
     {
-        return (i << distance) ^ (i >>> -distance);
+        return (i << distance) | (i >>> -distance);
     }
 
     public static int rotateRight(int i, int distance)
     {
-        return (i >>> distance) ^ (i << -distance);
+        return (i >>> distance) | (i << -distance);
     }
 
     public static Integer valueOf(int value)

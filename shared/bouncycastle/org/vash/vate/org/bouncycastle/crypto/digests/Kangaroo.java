@@ -1,6 +1,8 @@
 package org.vash.vate.org.bouncycastle.crypto.digests;
 
 import org.vash.vate.org.bouncycastle.crypto.CipherParameters;
+import org.vash.vate.org.bouncycastle.crypto.CryptoServicePurpose;
+import org.vash.vate.org.bouncycastle.crypto.CryptoServicesRegistrar;
 import org.vash.vate.org.bouncycastle.crypto.ExtendedDigest;
 import org.vash.vate.org.bouncycastle.crypto.Xof;
 import org.vash.vate.org.bouncycastle.util.Arrays;
@@ -28,7 +30,7 @@ public final class Kangaroo
          */
         public KangarooTwelve()
         {
-            this(DIGESTLEN);
+            this(DIGESTLEN, CryptoServicePurpose.ANY);
         }
 
         /**
@@ -36,9 +38,14 @@ public final class Kangaroo
          *
          * @param pLength the digest length
          */
-        public KangarooTwelve(final int pLength)
+        public KangarooTwelve(final int pLength, CryptoServicePurpose purpose)
         {
-            super(128, 12, pLength);
+            super(128, 12, pLength, purpose);
+        }
+
+        public KangarooTwelve(CryptoServicePurpose purpose)
+        {
+            this(DIGESTLEN, purpose);
         }
 
         public String getAlgorithmName()
@@ -58,7 +65,7 @@ public final class Kangaroo
          */
         public MarsupilamiFourteen()
         {
-            this(DIGESTLEN);
+            this(DIGESTLEN, CryptoServicePurpose.ANY);
         }
 
         /**
@@ -66,9 +73,13 @@ public final class Kangaroo
          *
          * @param pLength the digest length
          */
-        public MarsupilamiFourteen(final int pLength)
+        public MarsupilamiFourteen(final int pLength, CryptoServicePurpose purpose)
         {
-            super(256, 14, pLength);
+            super(256, 14, pLength, purpose);
+        }
+        public MarsupilamiFourteen(CryptoServicePurpose purpose)
+        {
+            this(DIGESTLEN, purpose);
         }
 
         public String getAlgorithmName()
@@ -222,7 +233,8 @@ public final class Kangaroo
          */
         KangarooBase(final int pStrength,
                      final int pRounds,
-                     final int pLength)
+                     final int pLength,
+                     CryptoServicePurpose purpose)
         {
             /* Create underlying digests */
             theTree = new KangarooSponge(pStrength, pRounds);
@@ -231,6 +243,9 @@ public final class Kangaroo
 
             /* Build personalisation */
             buildPersonal(null);
+
+            CryptoServicesRegistrar.checkConstraints(Utils.getDefaultProperties(this, pStrength, purpose));
+
         }
 
         /**
@@ -528,7 +543,7 @@ public final class Kangaroo
         /**
          * The round constants.
          */
-        private static long[] KeccakRoundConstants = new long[]{0x0000000000000001L, 0x0000000000008082L,
+        private static final long[] KeccakRoundConstants = new long[]{0x0000000000000001L, 0x0000000000008082L,
             0x800000000000808aL, 0x8000000080008000L, 0x000000000000808bL, 0x0000000080000001L, 0x8000000080008081L,
             0x8000000000008009L, 0x000000000000008aL, 0x0000000000000088L, 0x0000000080008009L, 0x000000008000000aL,
             0x000000008000808bL, 0x800000000000008bL, 0x8000000000008089L, 0x8000000000008003L, 0x8000000000008002L,
@@ -611,6 +626,12 @@ public final class Kangaroo
             int count = 0;
             while (count < len)
             {
+                if (bytesInQueue == theRateBytes)
+                {
+                    KangarooAbsorb(theQueue, 0);
+                    bytesInQueue = 0;
+                }
+
                 if (bytesInQueue == 0 && count <= (len - theRateBytes))
                 {
                     do
@@ -628,12 +649,6 @@ public final class Kangaroo
 
                     bytesInQueue += partialBlock;
                     count += partialBlock;
-
-                    if (bytesInQueue == theRateBytes)
-                    {
-                        KangarooAbsorb(theQueue, 0);
-                        bytesInQueue = 0;
-                    }
                 }
             }
         }

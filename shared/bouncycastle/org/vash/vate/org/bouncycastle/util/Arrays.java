@@ -1,14 +1,13 @@
 package org.vash.vate.org.bouncycastle.util;
 
 import java.math.BigInteger;
-import java.util.Iterator;
 
 /**
  * General array utilities.
  */
 public final class Arrays
 {
-    private Arrays() 
+    private Arrays()
     {
         // static class, hide constructor
     }
@@ -83,13 +82,13 @@ public final class Arrays
      * A constant time equals comparison - does not terminate early if
      * test will fail.
      *
-     * @param a first array
-     * @param b second array
+     * @param expected first array
+     * @param supplied second array
      * @return true if arrays equal, false otherwise.
      */
     public static boolean constantTimeAreEqual(
-        byte[]  expected,
-        byte[]  supplied)
+        byte[] expected,
+        byte[] supplied)
     {
         if (expected == null || supplied == null)
         {
@@ -146,6 +145,67 @@ public final class Arrays
             d |= (a[aOff + i] ^ b[bOff + i]);
         }
         return 0 == d;
+    }
+
+    public static boolean constantTimeAreEqual(
+        long[] expected,
+        long[] supplied)
+    {
+        if (expected == null || supplied == null)
+        {
+            return false;
+        }
+
+        if (expected == supplied)
+        {
+            return true;
+        }
+
+        int len = (expected.length < supplied.length) ? expected.length : supplied.length;
+
+        long nonEqual = expected.length ^ supplied.length;
+
+        for (int i = 0; i != len; i++)
+        {
+            nonEqual |= (expected[i] ^ supplied[i]);
+        }
+        for (int i = len; i < supplied.length; i++)
+        {
+            nonEqual |= (supplied[i] ^ ~supplied[i]);
+        }
+
+        return nonEqual == 0;
+    }
+
+    public static boolean constantTimeAreEqual(int len, long[] a, int aOff, long[] b, int bOff)
+    {
+        if (null == a)
+        {
+            throw new NullPointerException("'a' cannot be null");
+        }
+        if (null == b)
+        {
+            throw new NullPointerException("'b' cannot be null");
+        }
+        if (len < 0)
+        {
+            throw new IllegalArgumentException("'len' cannot be negative");
+        }
+        if (aOff > (a.length - len))
+        {
+            throw new IndexOutOfBoundsException("'aOff' value invalid for specified length");
+        }
+        if (bOff > (b.length - len))
+        {
+            throw new IndexOutOfBoundsException("'bOff' value invalid for specified length");
+        }
+
+        long d = 0;
+        for (int i = 0; i < len; ++i)
+        {
+            d |= (a[aOff + i] ^ b[bOff + i]);
+        }
+        return 0L == d;
     }
 
     public static int compareUnsigned(byte[] a, byte[] b)
@@ -385,18 +445,6 @@ public final class Arrays
         return hc;
     }
 
-    public static int hashCode(int[][] ints)
-    {
-        int hc = 0;
-
-        for (int i = 0; i != ints.length; i++)
-        {
-            hc = hc * 257 + hashCode(ints[i]);
-        }
-
-        return hc;
-    }
-
     public static int hashCode(int[] data)
     {
         if (data == null)
@@ -430,112 +478,6 @@ public final class Arrays
         {
             hc *= 257;
             hc ^= data[off + i];
-        }
-
-        return hc;
-    }
-
-    public static int hashCode(long[] data)
-    {
-        if (data == null)
-        {
-            return 0;
-        }
-
-        int i = data.length;
-        int hc = i + 1;
-
-        while (--i >= 0)
-        {
-            long di = data[i];
-            hc *= 257;
-            hc ^= (int)di;
-            hc *= 257;
-            hc ^= (int)(di >>> 32);
-        }
-
-        return hc;
-    }
-
-    public static int hashCode(long[] data, int off, int len)
-    {
-        if (data == null)
-        {
-            return 0;
-        }
-
-        int i = len;
-        int hc = i + 1;
-
-        while (--i >= 0)
-        {
-            long di = data[off + i];
-            hc *= 257;
-            hc ^= (int)di;
-            hc *= 257;
-            hc ^= (int)(di >>> 32);
-        }
-
-        return hc;
-    }
-
-    public static int hashCode(short[][][] shorts)
-    {
-        int hc = 0;
-
-        for (int i = 0; i != shorts.length; i++)
-        {
-            hc = hc * 257 + hashCode(shorts[i]);
-        }
-
-        return hc;
-    }
-
-    public static int hashCode(short[][] shorts)
-    {
-        int hc = 0;
-
-        for (int i = 0; i != shorts.length; i++)
-        {
-            hc = hc * 257 + hashCode(shorts[i]);
-        }
-
-        return hc;
-    }
-
-    public static int hashCode(short[] data)
-    {
-        if (data == null)
-        {
-            return 0;
-        }
-
-        int i = data.length;
-        int hc = i + 1;
-
-        while (--i >= 0)
-        {
-            hc *= 257;
-            hc ^= (data[i] & 0xff);
-        }
-
-        return hc;
-    }
-
-    public static int hashCode(Object[] data)
-    {
-        if (data == null)
-        {
-            return 0;
-        }
-
-        int i = data.length;
-        int hc = i + 1;
-
-        while (--i >= 0)
-        {
-            hc *= 257;
-            hc ^= data[i].hashCode();
         }
 
         return hc;
@@ -695,35 +637,6 @@ public final class Arrays
         return copy;
     }
 
-    /**
-     * Make a copy of a range of bytes from the passed in array. The range can extend beyond the end
-     * of the input array, in which case the returned array will be padded with zeroes.
-     *
-     * @param original
-     *            the array from which the data is to be copied.
-     * @param from
-     *            the start index at which the copying should take place.
-     * @param to
-     *            the final index of the range (exclusive).
-     *
-     * @return a new byte array containing the range given.
-     */
-    public static byte[] copyOfRange(byte[] original, int from, int to)
-    {
-        int newLength = getLength(from, to);
-        byte[] copy = new byte[newLength];
-        System.arraycopy(original, from, copy, 0, Math.min(original.length - from, newLength));
-        return copy;
-    }
-
-    public static char[] copyOfRange(char[] original, int from, int to)
-    {
-        int newLength = getLength(from, to);
-        char[] copy = new char[newLength];
-        System.arraycopy(original, from, copy, 0, Math.min(original.length - from, newLength));
-        return copy;
-    }
-
     public static int[] copyOfRange(int[] original, int from, int to)
     {
         int newLength = getLength(from, to);
@@ -761,9 +674,7 @@ public final class Arrays
         int newLength = to - from;
         if (newLength < 0)
         {
-            StringBuffer sb = new StringBuffer(from);
-            sb.append(" > ").append(to);
-            throw new IllegalArgumentException(sb.toString());
+            throw new IllegalArgumentException(from + " > " + to);
         }
         return newLength;
     }
@@ -772,7 +683,7 @@ public final class Arrays
     {
         if (a == null)
         {
-            return new byte[]{ b };
+            return new byte[]{b};
         }
 
         int length = a.length;
@@ -786,7 +697,7 @@ public final class Arrays
     {
         if (a == null)
         {
-            return new short[]{ b };
+            return new short[]{b};
         }
 
         int length = a.length;
@@ -800,7 +711,7 @@ public final class Arrays
     {
         if (a == null)
         {
-            return new int[]{ b };
+            return new int[]{b};
         }
 
         int length = a.length;
@@ -845,7 +756,7 @@ public final class Arrays
         System.arraycopy(b, 0, r, a.length, b.length);
         return r;
     }
-    
+
     public static byte[] concatenate(byte[] a, byte[] b, byte[] c)
     {
         if (null == a)
@@ -863,8 +774,10 @@ public final class Arrays
 
         byte[] r = new byte[a.length + b.length + c.length];
         int pos = 0;
-        System.arraycopy(a, 0, r, pos, a.length);       pos += a.length;
-        System.arraycopy(b, 0, r, pos, b.length);       pos += b.length;
+        System.arraycopy(a, 0, r, pos, a.length);
+        pos += a.length;
+        System.arraycopy(b, 0, r, pos, b.length);
+        pos += b.length;
         System.arraycopy(c, 0, r, pos, c.length);
         return r;
     }
@@ -890,9 +803,12 @@ public final class Arrays
 
         byte[] r = new byte[a.length + b.length + c.length + d.length];
         int pos = 0;
-        System.arraycopy(a, 0, r, pos, a.length);       pos += a.length;
-        System.arraycopy(b, 0, r, pos, b.length);       pos += b.length;
-        System.arraycopy(c, 0, r, pos, c.length);       pos += c.length;
+        System.arraycopy(a, 0, r, pos, a.length);
+        pos += a.length;
+        System.arraycopy(b, 0, r, pos, b.length);
+        pos += b.length;
+        System.arraycopy(c, 0, r, pos, c.length);
+        pos += c.length;
         System.arraycopy(d, 0, r, pos, d.length);
         return r;
     }
@@ -938,7 +854,7 @@ public final class Arrays
     {
         if (a == null)
         {
-            return new byte[]{ b };
+            return new byte[]{b};
         }
 
         int length = a.length;
@@ -952,7 +868,7 @@ public final class Arrays
     {
         if (a == null)
         {
-            return new short[]{ b };
+            return new short[]{b};
         }
 
         int length = a.length;
@@ -966,7 +882,7 @@ public final class Arrays
     {
         if (a == null)
         {
-            return new int[]{ b };
+            return new int[]{b};
         }
 
         int length = a.length;
@@ -985,7 +901,7 @@ public final class Arrays
 
         int p1 = 0, p2 = a.length;
         byte[] result = new byte[p2];
-        
+
         while (--p2 >= 0)
         {
             result[p2] = a[p1++];
@@ -1012,6 +928,15 @@ public final class Arrays
         return result;
     }
 
+    public static void reverse(byte[] input, byte[] output)
+    {
+        int last = input.length - 1;
+        for (int i = 0; i <= last; ++i)
+        {
+            output[i] = input[last - i];
+        }
+    }
+
     public static byte[] reverseInPlace(byte[] a)
     {
         if (null == a)
@@ -1023,6 +948,35 @@ public final class Arrays
         while (p1 < p2)
         {
             byte t1 = a[p1], t2 = a[p2];
+            a[p1++] = t2;
+            a[p2--] = t1;
+        }
+
+        return a;
+    }
+
+    public static void reverseInPlace(byte[] a, int aOff, int aLen)
+    {
+        int p1 = aOff, p2 = aOff + aLen - 1;
+        while (p1 < p2)
+        {
+            byte t1 = a[p1], t2 = a[p2];
+            a[p1++] = t2;
+            a[p2--] = t1;
+        }
+    }
+
+    public static short[] reverseInPlace(short[] a)
+    {
+        if (null == a)
+        {
+            return null;
+        }
+
+        int p1 = 0, p2 = a.length - 1;
+        while (p1 < p2)
+        {
+            short t1 = a[p1], t2 = a[p2];
             a[p1++] = t2;
             a[p2--] = t1;
         }
@@ -1068,7 +1022,15 @@ public final class Arrays
             java.util.Arrays.fill(data, 0);
         }
     }
-    
+
+    public static void clear(long[] data)
+    {
+        if (null != data)
+        {
+            java.util.Arrays.fill(data, 0);
+        }
+    }
+
     public static boolean isNullOrContainsNull(Object[] array)
     {
         if (null == array)
@@ -1100,7 +1062,172 @@ public final class Arrays
     {
         return null == array || array.length < 1;
     }
-        
+
+    /**
+     * Make a copy of a range of bytes from the passed in array. The range can extend beyond the end
+     * of the input array, in which case the returned array will be padded with zeroes.
+     *
+     * @param original the array from which the data is to be copied.
+     * @param from     the start index at which the copying should take place.
+     * @param to       the final index of the range (exclusive).
+     * @return a new byte array containing the range given.
+     */
+    public static byte[] copyOfRange(byte[] original, int from, int to)
+    {
+        int newLength = getLength(from, to);
+        byte[] copy = new byte[newLength];
+        System.arraycopy(original, from, copy, 0, Math.min(original.length - from, newLength));
+        return copy;
+    }
+
+    public static char[] copyOfRange(char[] original, int from, int to)
+    {
+        int newLength = getLength(from, to);
+        char[] copy = new char[newLength];
+        System.arraycopy(original, from, copy, 0, Math.min(original.length - from, newLength));
+        return copy;
+    }
+
+    public static int hashCode(int[][] ints)
+    {
+        int hc = 0;
+
+        for (int i = 0; i != ints.length; i++)
+        {
+            hc = hc * 257 + hashCode(ints[i]);
+        }
+
+        return hc;
+    }
+
+    public static int hashCode(long[] data)
+    {
+        if (data == null)
+        {
+            return 0;
+        }
+
+        int i = data.length;
+        int hc = i + 1;
+
+        while (--i >= 0)
+        {
+            long di = data[i];
+            hc *= 257;
+            hc ^= (int)di;
+            hc *= 257;
+            hc ^= (int)(di >>> 32);
+        }
+
+        return hc;
+    }
+
+    public static int hashCode(long[] data, int off, int len)
+    {
+        if (data == null)
+        {
+            return 0;
+        }
+
+        int i = len;
+        int hc = i + 1;
+
+        while (--i >= 0)
+        {
+            long di = data[off + i];
+            hc *= 257;
+            hc ^= (int)di;
+            hc *= 257;
+            hc ^= (int)(di >>> 32);
+        }
+
+        return hc;
+    }
+
+    public static int hashCode(short[][][] shorts)
+    {
+        int hc = 0;
+
+        for (int i = 0; i != shorts.length; i++)
+        {
+            hc = hc * 257 + hashCode(shorts[i]);
+        }
+
+        return hc;
+    }
+
+    public static int hashCode(short[][] shorts)
+    {
+        int hc = 0;
+
+        for (int i = 0; i != shorts.length; i++)
+        {
+            hc = hc * 257 + hashCode(shorts[i]);
+        }
+
+        return hc;
+    }
+
+    public static int hashCode(short[] data)
+    {
+        if (data == null)
+        {
+            return 0;
+        }
+
+        int i = data.length;
+        int hc = i + 1;
+
+        while (--i >= 0)
+        {
+            hc *= 257;
+            hc ^= (data[i] & 0xff);
+        }
+
+        return hc;
+    }
+
+    public static int hashCode(Object[] data)
+    {
+        if (data == null)
+        {
+            return 0;
+        }
+
+        int i = data.length;
+        int hc = i + 1;
+
+        while (--i >= 0)
+        {
+            hc *= 257;
+            hc ^= Objects.hashCode(data[i]);
+        }
+
+        return hc;
+    }
+
+    public static boolean segmentsOverlap(int aOff, int aLen, int bOff, int bLen)
+    {
+        return aLen > 0
+            && bLen > 0
+            && aOff - bOff < bLen
+            && bOff - aOff < aLen;
+    }
+
+    public static void validateSegment(byte[] buf, int off, int len)
+    {
+        if (buf == null)
+        {
+            throw new NullPointerException("'buf' cannot be null");
+        }
+        int available = buf.length - off;
+        int remaining = available - len;
+        if ((off | len | available | remaining) < 0)
+        {
+            throw new IndexOutOfBoundsException("buf.length: " + buf.length + ", off: " + off + ", len: " + len);
+        }
+    }
+
     /**
      * Iterator backed by a specific array.
      */
@@ -1138,13 +1265,5 @@ public final class Arrays
         {
             throw new UnsupportedOperationException("Cannot remove element from an Array.");
         }
-    }
-    
-    public static boolean segmentsOverlap(int aOff, int aLen, int bOff, int bLen)
-    {
-        return aLen > 0
-            && bLen > 0
-            && aOff - bOff < bLen
-            && bOff - aOff < aLen;
     }
 }

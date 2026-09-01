@@ -1,9 +1,11 @@
 package org.vash.vate.org.bouncycastle.crypto.engines;
 
-import java.util.Arrays;
-
 import org.vash.vate.org.bouncycastle.crypto.CipherParameters;
+import org.vash.vate.org.bouncycastle.crypto.CryptoServicesRegistrar;
+import org.vash.vate.org.bouncycastle.crypto.DataLengthException;
+import org.vash.vate.org.bouncycastle.crypto.OutputLengthException;
 import org.vash.vate.org.bouncycastle.crypto.StreamCipher;
+import org.vash.vate.org.bouncycastle.crypto.constraints.DefaultServiceProperties;
 import org.vash.vate.org.bouncycastle.crypto.params.KeyParameter;
 import org.vash.vate.org.bouncycastle.util.Pack;
 
@@ -19,15 +21,15 @@ public class ISAACEngine
                       stateArraySize = sizeL<<5; // 256
     
     // Cipher's internal state
-    private final int[] engineState   = new int [stateArraySize]; // mm                
-    private final int[] results       = new int [stateArraySize]; // randrsl
+    private int[]   engineState   = null, // mm                
+                    results       = null; // randrsl
     private int     a = 0, b = 0, c = 0;
     
     // Engine state
     private int     index         = 0;
-    private byte[]  keyStream     = new byte[stateArraySize<<2]; // results expanded into bytes
-    private byte[]  workingKey    = null;
-    //private boolean initialised   = false;
+    private byte[]  keyStream     = new byte[stateArraySize<<2], // results expanded into bytes
+                    workingKey    = null;
+    private boolean initialised   = false;
     
     /**
      * initialise an ISAAC cipher.
@@ -37,7 +39,7 @@ public class ISAACEngine
      * @exception IllegalArgumentException if the params argument is
      * inappropriate.
      */
-    public final void init(
+    public void init(
         boolean             forEncryption, 
         CipherParameters    params)
     {
@@ -51,12 +53,13 @@ public class ISAACEngine
          * irrelevant.
          */
         KeyParameter p = (KeyParameter)params;
-        setKey(p.getKey());
-        
-        return;
+        byte[] key = p.getKey();
+        setKey(key);
+
+        CryptoServicesRegistrar.checkConstraints(new DefaultServiceProperties(getAlgorithmName(), key.length < 32 ? key.length * 8 : 256, params, Utils.getPurpose(forEncryption)));
     }
                     
-    public final byte returnByte(byte in)
+    public byte returnByte(byte in)
     {
         if (index == 0) 
         {
@@ -69,27 +72,27 @@ public class ISAACEngine
         return out;
     }
     
-    public final int processBytes(
+    public int processBytes(
         byte[]  in, 
         int     inOff, 
         int     len, 
         byte[]  out, 
         int     outOff)
     {
-//        if (!initialised)
-//        {
-//            throw new IllegalStateException(getAlgorithmName()+" not initialised");
-//        }
-//        
-//        if ((inOff + len) > in.length)
-//        {
-//            throw new DataLengthException("input buffer too short");
-//        }
-//        
-//        if ((outOff + len) > out.length)
-//        {
-//            throw new OutputLengthException("output buffer too short");
-//        }
+        if (!initialised)
+        {
+            throw new IllegalStateException(getAlgorithmName()+" not initialised");
+        }
+        
+        if ((inOff + len) > in.length)
+        {
+            throw new DataLengthException("input buffer too short");
+        }
+        
+        if ((outOff + len) > out.length)
+        {
+            throw new OutputLengthException("output buffer too short");
+        }
         
         for (int i = 0; i < len; i++)
         {
@@ -105,31 +108,30 @@ public class ISAACEngine
         return len;
     }
     
-    public final String getAlgorithmName()
+    public String getAlgorithmName()
     {
         return "ISAAC";
     }
     
-    public final void reset()
+    public void reset()
     {
         setKey(workingKey);
     }
     
     // Private implementation
-    private final void setKey(byte[] keyBytes)
+    private void setKey(byte[] keyBytes)
     {
         workingKey = keyBytes;
-        Arrays.fill(engineState, 0);
-        Arrays.fill(results, 0);
-//        if (engineState == null)
-//        {
-//            //engineState = new int[stateArraySize];
-//        }
-//        
-//        if (results == null)
-//        {
-//            //results = new int[stateArraySize];
-//        }
+        
+        if (engineState == null)
+        {
+            engineState = new int[stateArraySize];
+        }
+        
+        if (results == null)
+        {
+            results = new int[stateArraySize];
+        }
         
         int i, j, k;
         
@@ -184,10 +186,10 @@ public class ISAACEngine
         
         isaac();
         
-        //initialised = true;
+        initialised = true;
     }    
     
-    private final void isaac()
+    private void isaac()
     {
         int i, x, y;
         
@@ -208,7 +210,7 @@ public class ISAACEngine
         }
     }
     
-    private static void mix(int[] x)
+    private void mix(int[] x)
     {
         x[0]^=x[1]<< 11; x[3]+=x[0]; x[1]+=x[2];
         x[1]^=x[2]>>> 2; x[4]+=x[1]; x[2]+=x[3];

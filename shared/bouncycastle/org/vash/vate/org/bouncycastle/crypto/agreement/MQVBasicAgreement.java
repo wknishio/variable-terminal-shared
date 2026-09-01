@@ -5,6 +5,7 @@ import java.math.BigInteger;
 
 import org.vash.vate.org.bouncycastle.crypto.BasicAgreement;
 import org.vash.vate.org.bouncycastle.crypto.CipherParameters;
+import org.vash.vate.org.bouncycastle.crypto.CryptoServicesRegistrar;
 import org.vash.vate.org.bouncycastle.crypto.params.DHMQVPrivateParameters;
 import org.vash.vate.org.bouncycastle.crypto.params.DHMQVPublicParameters;
 import org.vash.vate.org.bouncycastle.crypto.params.DHParameters;
@@ -22,6 +23,8 @@ public class MQVBasicAgreement
         CipherParameters key)
     {
         this.privParams = (DHMQVPrivateParameters)key;
+
+        CryptoServicesRegistrar.checkConstraints(Utils.getDefaultProperties("MQV", this.privParams.getStaticPrivateKey()));
     }
 
     public int getFieldSize()

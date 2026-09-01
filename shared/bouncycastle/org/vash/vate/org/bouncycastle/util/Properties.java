@@ -17,6 +17,11 @@ import java.util.StringTokenizer;
  */
 public class Properties
 {
+    /**
+     * If set the provider will attempt, where possible, to behave the same way as the oracle one.
+     */
+    public static final String EMULATE_ORACLE = "org.bouncycastle.emulate.oracle";
+
     private Properties()
     {
     }
@@ -36,6 +41,32 @@ public class Properties
             String p = getPropertyValue(propertyName);
 
             return "true".equalsIgnoreCase(p);
+        }
+        catch (AccessControlException e)
+        {
+            return false;
+        }
+    }
+
+    /**
+     * Return whether a particular override has been set to true.
+     *
+     * @param propertyName the property name for the override.
+     * @return true if the property is set to "true", false otherwise.
+     */
+    public static boolean isOverrideSet(String propertyName, boolean defIsTrue)
+    {
+        try
+        {
+            String value = getPropertyValue(propertyName);
+            if (value == null)
+            {
+                return defIsTrue;
+            }
+            else
+            {
+                return "true".equalsIgnoreCase(value);
+            }
         }
         catch (AccessControlException e)
         {

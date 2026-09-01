@@ -2,6 +2,8 @@ package org.vash.vate.org.bouncycastle.crypto.engines;
 
 import org.vash.vate.org.bouncycastle.crypto.BlockCipher;
 import org.vash.vate.org.bouncycastle.crypto.CipherParameters;
+import org.vash.vate.org.bouncycastle.crypto.CryptoServicesRegistrar;
+import org.vash.vate.org.bouncycastle.crypto.constraints.DefaultServiceProperties;
 import org.vash.vate.org.bouncycastle.crypto.params.KeyParameter;
 import org.vash.vate.org.bouncycastle.crypto.params.RC5Parameters;
 
@@ -11,8 +13,6 @@ import org.vash.vate.org.bouncycastle.crypto.params.RC5Parameters;
  *  https://www.rsasecurity.com/rsalabs/cryptobytes</em>.
  * <p>
  * This implementation has a word size of 32 bits.
- * <p>
- * Implementation courtesy of Tito Pena.
  */
 public class RC532Engine
     implements BlockCipher
@@ -73,19 +73,22 @@ public class RC532Engine
         boolean             forEncryption,
         CipherParameters    params)
     {
+        byte[] key;
         if (params instanceof RC5Parameters)
         {
             RC5Parameters       p = (RC5Parameters)params;
 
             _noRounds     = p.getRounds();
 
-            setKey(p.getKey());
+            key = p.getKey();
+            setKey(key);
         }
         else if (params instanceof KeyParameter)
         {
             KeyParameter       p = (KeyParameter)params;
 
-            setKey(p.getKey());
+            key = p.getKey();
+            setKey(key);
         }
         else
         {
@@ -93,6 +96,7 @@ public class RC532Engine
         }
 
         this.forEncryption = forEncryption;
+        CryptoServicesRegistrar.checkConstraints(new DefaultServiceProperties(getAlgorithmName(), key.length * 8, params, Utils.getPurpose(forEncryption)));
     }
 
     public int processBlock(

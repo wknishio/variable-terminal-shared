@@ -1,18 +1,19 @@
 package org.vash.vate.org.bouncycastle.crypto.modes;
 
 import org.vash.vate.org.bouncycastle.crypto.BlockCipher;
-import org.vash.vate.org.bouncycastle.crypto.BufferedBlockCipher;
 import org.vash.vate.org.bouncycastle.crypto.CipherParameters;
 import org.vash.vate.org.bouncycastle.crypto.DataLengthException;
+import org.vash.vate.org.bouncycastle.crypto.DefaultBufferedBlockCipher;
 import org.vash.vate.org.bouncycastle.crypto.OutputLengthException;
 import org.vash.vate.org.bouncycastle.crypto.params.ParametersWithIV;
+import org.vash.vate.org.bouncycastle.util.Arrays;
 import org.vash.vate.org.bouncycastle.util.Pack;
 
 /**
  * Implementation of DSTU7624 XTS mode
  */
 public class KXTSBlockCipher
-    extends BufferedBlockCipher
+    extends DefaultBufferedBlockCipher
 {
     /*
      * Constants for GF(2^m) operations
@@ -123,7 +124,12 @@ public class KXTSBlockCipher
         {
             throw new IllegalArgumentException("Partial blocks not supported");
         }
-
+        if (input == output && Arrays.segmentsOverlap(inOff, len, outOff, len))
+        {
+            input = new byte[len];
+            System.arraycopy(output, inOff, input, 0, len);
+            inOff = 0;
+        }
         for (int pos = 0; pos < len; pos += blockSize)
         {
             processBlock(input, inOff + pos, output, outOff + pos);

@@ -7,6 +7,8 @@ import org.vash.vate.org.bouncycastle.crypto.AsymmetricBlockCipher;
 import org.vash.vate.org.bouncycastle.crypto.CipherParameters;
 import org.vash.vate.org.bouncycastle.crypto.CryptoServicesRegistrar;
 import org.vash.vate.org.bouncycastle.crypto.DataLengthException;
+import org.vash.vate.org.bouncycastle.crypto.constraints.ConstraintUtils;
+import org.vash.vate.org.bouncycastle.crypto.constraints.DefaultServiceProperties;
 import org.vash.vate.org.bouncycastle.crypto.params.ElGamalKeyParameters;
 import org.vash.vate.org.bouncycastle.crypto.params.ElGamalPrivateKeyParameters;
 import org.vash.vate.org.bouncycastle.crypto.params.ElGamalPublicKeyParameters;
@@ -71,6 +73,8 @@ public class ElGamalEngine
                 throw new IllegalArgumentException("ElGamalPrivateKeyParameters are required for decryption.");
             }
         }
+
+        CryptoServicesRegistrar.checkConstraints(new DefaultServiceProperties("RSA", ConstraintUtils.bitsOfSecurityFor(key.getParameters().getP()), key, Utils.getPurpose(forEncryption)));
     }
 
     /**

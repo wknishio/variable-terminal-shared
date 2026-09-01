@@ -3,6 +3,7 @@ package org.vash.vate.org.bouncycastle.crypto.agreement;
 import java.math.BigInteger;
 
 import org.vash.vate.org.bouncycastle.crypto.CipherParameters;
+import org.vash.vate.org.bouncycastle.crypto.CryptoServicesRegistrar;
 import org.vash.vate.org.bouncycastle.crypto.params.DHUPrivateParameters;
 import org.vash.vate.org.bouncycastle.crypto.params.DHUPublicParameters;
 import org.vash.vate.org.bouncycastle.util.BigIntegers;
@@ -18,6 +19,8 @@ public class DHUnifiedAgreement
         CipherParameters key)
     {
         this.privParams = (DHUPrivateParameters)key;
+
+        CryptoServicesRegistrar.checkConstraints(Utils.getDefaultProperties("DHU", this.privParams.getStaticPrivateKey()));
     }
 
     public int getFieldSize()

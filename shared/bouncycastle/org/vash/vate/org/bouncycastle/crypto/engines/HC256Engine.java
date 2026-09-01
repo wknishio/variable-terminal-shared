@@ -1,8 +1,7 @@
 package org.vash.vate.org.bouncycastle.crypto.engines;
 
-import org.vash.vate.org.bouncycastle.crypto.CipherParameters;
-import org.vash.vate.org.bouncycastle.crypto.DataLengthException;
-import org.vash.vate.org.bouncycastle.crypto.StreamCipher;
+import org.vash.vate.org.bouncycastle.crypto.*;
+import org.vash.vate.org.bouncycastle.crypto.constraints.DefaultServiceProperties;
 import org.vash.vate.org.bouncycastle.crypto.params.KeyParameter;
 import org.vash.vate.org.bouncycastle.crypto.params.ParametersWithIV;
 
@@ -62,7 +61,7 @@ public class HC256Engine
     }
 
     private byte[] key, iv;
-    //private boolean initialised;
+    private boolean initialised;
 
     private void init()
     {
@@ -167,6 +166,9 @@ public class HC256Engine
         {
             key = ((KeyParameter)keyParam).getKey();
             init();
+
+            CryptoServicesRegistrar.checkConstraints(new DefaultServiceProperties(
+                    this.getAlgorithmName(), key.length * 8, params, Utils.getPurpose(forEncryption)));
         }
         else
         {
@@ -175,7 +177,7 @@ public class HC256Engine
                     + params.getClass().getName());
         }
 
-        //initialised = true;
+        initialised = true;
     }
 
     private byte[] buf = new byte[4];
@@ -202,21 +204,21 @@ public class HC256Engine
     public int processBytes(byte[] in, int inOff, int len, byte[] out,
                              int outOff) throws DataLengthException
     {
-//        if (!initialised)
-//        {
-//            throw new IllegalStateException(getAlgorithmName()
-//                + " not initialised");
-//        }
-//
-//        if ((inOff + len) > in.length)
-//        {
-//            throw new DataLengthException("input buffer too short");
-//        }
-//
-//        if ((outOff + len) > out.length)
-//        {
-//            throw new OutputLengthException("output buffer too short");
-//        }
+        if (!initialised)
+        {
+            throw new IllegalStateException(getAlgorithmName()
+                + " not initialised");
+        }
+
+        if ((inOff + len) > in.length)
+        {
+            throw new DataLengthException("input buffer too short");
+        }
+
+        if ((outOff + len) > out.length)
+        {
+            throw new OutputLengthException("output buffer too short");
+        }
 
         for (int i = 0; i < len; i++)
         {

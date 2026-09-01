@@ -6,7 +6,11 @@ import java.util.Vector;
 
 import org.vash.vate.org.bouncycastle.crypto.AsymmetricCipherKeyPair;
 import org.vash.vate.org.bouncycastle.crypto.AsymmetricCipherKeyPairGenerator;
+import org.vash.vate.org.bouncycastle.crypto.CryptoServicePurpose;
+import org.vash.vate.org.bouncycastle.crypto.CryptoServicesRegistrar;
 import org.vash.vate.org.bouncycastle.crypto.KeyGenerationParameters;
+import org.vash.vate.org.bouncycastle.crypto.constraints.ConstraintUtils;
+import org.vash.vate.org.bouncycastle.crypto.constraints.DefaultServiceProperties;
 import org.vash.vate.org.bouncycastle.crypto.params.NaccacheSternKeyGenerationParameters;
 import org.vash.vate.org.bouncycastle.crypto.params.NaccacheSternKeyParameters;
 import org.vash.vate.org.bouncycastle.crypto.params.NaccacheSternPrivateKeyParameters;
@@ -20,7 +24,6 @@ import org.vash.vate.org.bouncycastle.util.BigIntegers;
 public class NaccacheSternKeyPairGenerator 
     implements AsymmetricCipherKeyPairGenerator 
 {
-
     private static int[] smallPrimes =
     {
         3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67,
@@ -39,17 +42,20 @@ public class NaccacheSternKeyPairGenerator
     /*
      * (non-Javadoc)
      * 
-     * @see org.bouncycastle.crypto.AsymmetricCipherKeyPairGenerator#init(org.bouncycastle.crypto.KeyGenerationParameters)
+     * @see org.vash.vate.org.bouncycastle.crypto.AsymmetricCipherKeyPairGenerator#init(org.vash.vate.org.bouncycastle.crypto.KeyGenerationParameters)
      */
     public void init(KeyGenerationParameters param)
     {
         this.param = (NaccacheSternKeyGenerationParameters)param;
+
+        CryptoServicesRegistrar.checkConstraints(new DefaultServiceProperties(
+                       "NaccacheStern KeyGen", ConstraintUtils.bitsOfSecurityForFF(param.getStrength()), param, CryptoServicePurpose.KEYGEN));
     }
 
     /*
      * (non-Javadoc)
      * 
-     * @see org.bouncycastle.crypto.AsymmetricCipherKeyPairGenerator#generateKeyPair()
+     * @see org.vash.vate.org.bouncycastle.crypto.AsymmetricCipherKeyPairGenerator#generateKeyPair()
      */
     public AsymmetricCipherKeyPair generateKeyPair()
     {
@@ -105,6 +111,7 @@ public class NaccacheSternKeyPairGenerator
         BigInteger _2au = a.multiply(u).shiftLeft(1);
         BigInteger _2bv = b.multiply(v).shiftLeft(1);
 
+        BigInteger n;
         for (;;)
         {
             tries++;
@@ -135,24 +142,25 @@ public class NaccacheSternKeyPairGenerator
                 }
             }
 
-            if (!sigma.gcd(p_.multiply(q_)).equals(ONE))
+            if (!BigIntegers.modOddIsCoprime(p_.multiply(q_), sigma))
             {
                 // System.out.println("sigma.gcd(p_.mult(q_)) != 1!\n p_: " + p_
                 // +"\n q_: "+ q_ );
                 continue;
             }
 
-            if (p.multiply(q).bitLength() < strength)
+            n = p.multiply(q);
+            if (n.bitLength() >= strength)
             {
-                if (debug)
-                {
-                    // -DM System.out.println
-                    System.out.println("key size too small. Should be " + strength + " but is actually "
-                                    + p.multiply(q).bitLength());
-                }
-                continue;
+                break;
             }
-            break;
+
+            if (debug)
+            {
+                // -DM System.out.println
+                System.out.println("key size too small. Should be " + strength + " but is actually "
+                                + p.multiply(q).bitLength());
+            }
         }
 
         if (debug)
@@ -161,7 +169,6 @@ public class NaccacheSternKeyPairGenerator
             System.out.println("needed " + tries + " tries to generate p and q.");
         }
 
-        BigInteger n = p.multiply(q);
         BigInteger phi_n = p.subtract(ONE).multiply(q.subtract(ONE));
         BigInteger g;
         tries = 0;
@@ -289,8 +296,9 @@ public class NaccacheSternKeyPairGenerator
             System.out.println();
         }
 
-        return new AsymmetricCipherKeyPair(new NaccacheSternKeyParameters(false, g, n, sigma.bitLength()),
-                        new NaccacheSternPrivateKeyParameters(g, n, sigma.bitLength(), smallPrimes, phi_n));
+        return new AsymmetricCipherKeyPair(
+            new NaccacheSternKeyParameters(false, g, n, sigma.bitLength()),
+            new NaccacheSternPrivateKeyParameters(g, n, sigma.bitLength(), smallPrimes, phi_n));
     }
 
     private static BigInteger generatePrime(
@@ -375,5 +383,4 @@ public class NaccacheSternKeyPairGenerator
         
         return primes;
     }
-
 }

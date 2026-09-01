@@ -6,7 +6,7 @@ package org.vash.vate.org.bouncycastle.util;
 public class Bytes
 {
     public static final int BYTES = 1;
-    public static final int SIZE = Byte.SIZE;
+    public static final int SIZE = 8;
 
     public static void xor(int len, byte[] x, byte[] y, byte[] z)
     {

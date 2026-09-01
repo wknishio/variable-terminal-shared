@@ -1,7 +1,12 @@
 package org.vash.vate.org.bouncycastle.crypto.engines;
 
 import org.vash.vate.org.bouncycastle.crypto.CipherParameters;
+import org.vash.vate.org.bouncycastle.crypto.CryptoServicesRegistrar;
+import org.vash.vate.org.bouncycastle.crypto.DataLengthException;
+import org.vash.vate.org.bouncycastle.crypto.MaxBytesExceededException;
+import org.vash.vate.org.bouncycastle.crypto.OutputLengthException;
 import org.vash.vate.org.bouncycastle.crypto.SkippingStreamCipher;
+import org.vash.vate.org.bouncycastle.crypto.constraints.DefaultServiceProperties;
 import org.vash.vate.org.bouncycastle.crypto.params.KeyParameter;
 import org.vash.vate.org.bouncycastle.crypto.params.ParametersWithIV;
 import org.vash.vate.org.bouncycastle.util.Integers;
@@ -21,7 +26,7 @@ public class Salsa20Engine
 
     private final static int[] TAU_SIGMA = Pack.littleEndianToInt(Strings.toByteArray("expand 16-byte k" + "expand 32-byte k"), 0, 8);
 
-    protected final void packTauOrSigma(int keyLength, int[] state, int stateOffset)
+    protected void packTauOrSigma(int keyLength, int[] state, int stateOffset)
     {
         int tsOff = (keyLength - 16) / 4;
         state[stateOffset    ] = TAU_SIGMA[tsOff    ];
@@ -35,22 +40,22 @@ public class Salsa20Engine
         sigma = Strings.toByteArray("expand 32-byte k"),
         tau   = Strings.toByteArray("expand 16-byte k");
 
-    protected final int rounds;
+    protected int rounds;
 
     /*
      * variables to hold the state of the engine
      * during encryption and decryption
      */
     private int         index = 0;
-    protected final int[]     engineState = new int[STATE_SIZE]; // state
-    protected final int[]     x = new int[STATE_SIZE] ; // internal buffer
-    private final byte[]      keyStream   = new byte[STATE_SIZE * 4]; // expanded state, 64 bytes
-    //private boolean     initialised = false;
+    protected int[]     engineState = new int[STATE_SIZE]; // state
+    protected int[]     x = new int[STATE_SIZE] ; // internal buffer
+    private byte[]      keyStream   = new byte[STATE_SIZE * 4]; // expanded state, 64 bytes
+    private boolean     initialised = false;
 
     /*
      * internal counter
      */
-//    private int cW0, cW1, cW2;
+    private int cW0, cW1, cW2;
 
     /**
      * Creates a 20 round Salsa20 engine.
@@ -87,9 +92,8 @@ public class Salsa20Engine
         CipherParameters     params)
     {
         /* 
-        * Salsa20 encryption and decryption is completely
-        * symmetrical, so the 'forEncryption' is 
-        * irrelevant. (Like 90% of stream ciphers)
+        * Salsa20 encryption and decryption is completely symmetrical, so the 'forEncryption' is
+        * irrelevant for implementation purposes. (Like 90% of stream ciphers)
         */
 
         if (!(params instanceof ParametersWithIV))
@@ -109,16 +113,21 @@ public class Salsa20Engine
         CipherParameters keyParam = ivParams.getParameters();
         if (keyParam == null)
         {
-//            if (!initialised)
-//            {
-//                throw new IllegalStateException(getAlgorithmName() + " KeyParameter can not be null for first initialisation");
-//            }
+            if (!initialised)
+            {
+                throw new IllegalStateException(getAlgorithmName() + " KeyParameter can not be null for first initialisation");
+            }
 
             setKey(null, iv);
         }
         else if (keyParam instanceof KeyParameter)
         {
-            setKey(((KeyParameter)keyParam).getKey(), iv);
+            byte[] key = ((KeyParameter)keyParam).getKey();
+
+            setKey(key, iv);
+
+            CryptoServicesRegistrar.checkConstraints(new DefaultServiceProperties(
+                        this.getAlgorithmName(), key.length * 8, params, Utils.getPurpose(forEncryption)));
         }
         else
         {
@@ -127,7 +136,7 @@ public class Salsa20Engine
 
         reset();
 
-        //initialised = true;
+        initialised = true;
     }
 
     protected int getNonceSize()
@@ -147,10 +156,10 @@ public class Salsa20Engine
 
     public byte returnByte(byte in)
     {
-//        if (limitExceeded())
-//        {
-//            throw new MaxBytesExceededException("2^70 byte limit per IV; Change IV");
-//        }
+        if (limitExceeded())
+        {
+            throw new MaxBytesExceededException("2^70 byte limit per IV; Change IV");
+        }
 
         byte out = (byte)(keyStream[index]^in);
         index = (index + 1) & 63;
@@ -247,25 +256,25 @@ public class Salsa20Engine
         byte[]     out, 
         int     outOff)
     {
-//        if (!initialised)
-//        {
-//            throw new IllegalStateException(getAlgorithmName() + " not initialised");
-//        }
-//
-//        if ((inOff + len) > in.length)
-//        {
-//            throw new DataLengthException("input buffer too short");
-//        }
-//
-//        if ((outOff + len) > out.length)
-//        {
-//            throw new OutputLengthException("output buffer too short");
-//        }
-//
-//        if (limitExceeded(len))
-//        {
-//            throw new MaxBytesExceededException("2^70 byte limit per IV would be exceeded; Change IV");
-//        }
+        if (!initialised)
+        {
+            throw new IllegalStateException(getAlgorithmName() + " not initialised");
+        }
+
+        if ((inOff + len) > in.length)
+        {
+            throw new DataLengthException("input buffer too short");
+        }
+
+        if ((outOff + len) > out.length)
+        {
+            throw new OutputLengthException("output buffer too short");
+        }
+
+        if (limitExceeded(len))
+        {
+            throw new MaxBytesExceededException("2^70 byte limit per IV would be exceeded; Change IV");
+        }
 
         for (int i = 0; i < len; i++)
         {
@@ -401,20 +410,20 @@ public class Salsa20Engine
      *
      * @param   input   input data
      */    
-    public static final void salsaCore(int rounds, int[] input, int[] x)
+    public static void salsaCore(int rounds, int[] input, int[] x)
     {
-//        if (input.length != 16)
-//        {
-//            throw new IllegalArgumentException();
-//        }
-//        if (x.length != 16)
-//        {
-//            throw new IllegalArgumentException();
-//        }
-//        if (rounds % 2 != 0)
-//        {
-//            throw new IllegalArgumentException("Number of rounds must be even");
-//        }
+        if (input.length != 16)
+        {
+            throw new IllegalArgumentException();
+        }
+        if (x.length != 16)
+        {
+            throw new IllegalArgumentException();
+        }
+        if (rounds % 2 != 0)
+        {
+            throw new IllegalArgumentException("Number of rounds must be even");
+        }
 
         int x00 = input[ 0];
         int x01 = input[ 1];
@@ -490,38 +499,38 @@ public class Salsa20Engine
 
     private void resetLimitCounter()
     {
-//        cW0 = 0;
-//        cW1 = 0;
-//        cW2 = 0;
+        cW0 = 0;
+        cW1 = 0;
+        cW2 = 0;
     }
 
-//    private boolean limitExceeded()
-//    {
-//        if (++cW0 == 0)
-//        {
-//            if (++cW1 == 0)
-//            {
-//                return (++cW2 & 0x20) != 0;          // 2^(32 + 32 + 6)
-//            }
-//        }
-//
-//        return false;
-//    }
-//
-//    /*
-//     * this relies on the fact len will always be positive.
-//     */
-//    private boolean limitExceeded(int len)
-//    {
-//        cW0 += len;
-//        if (cW0 < len && cW0 >= 0)
-//        {
-//            if (++cW1 == 0)
-//            {
-//                return (++cW2 & 0x20) != 0;          // 2^(32 + 32 + 6)
-//            }
-//        }
-//
-//        return false;
-//    }
+    private boolean limitExceeded()
+    {
+        if (++cW0 == 0)
+        {
+            if (++cW1 == 0)
+            {
+                return (++cW2 & 0x20) != 0;          // 2^(32 + 32 + 6)
+            }
+        }
+
+        return false;
+    }
+
+    /*
+     * this relies on the fact len will always be positive.
+     */
+    private boolean limitExceeded(int len)
+    {
+        cW0 += len;
+        if (cW0 < len && cW0 >= 0)
+        {
+            if (++cW1 == 0)
+            {
+                return (++cW2 & 0x20) != 0;          // 2^(32 + 32 + 6)
+            }
+        }
+
+        return false;
+    }
 }

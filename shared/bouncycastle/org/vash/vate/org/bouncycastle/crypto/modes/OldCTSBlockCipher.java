@@ -1,10 +1,11 @@
 package org.vash.vate.org.bouncycastle.crypto.modes;
 
 import org.vash.vate.org.bouncycastle.crypto.BlockCipher;
-import org.vash.vate.org.bouncycastle.crypto.BufferedBlockCipher;
 import org.vash.vate.org.bouncycastle.crypto.DataLengthException;
+import org.vash.vate.org.bouncycastle.crypto.DefaultBufferedBlockCipher;
 import org.vash.vate.org.bouncycastle.crypto.InvalidCipherTextException;
 import org.vash.vate.org.bouncycastle.crypto.OutputLengthException;
+import org.vash.vate.org.bouncycastle.util.Arrays;
 
 /**
  * A Cipher Text Stealing (CTS) mode cipher. CTS allows block ciphers to
@@ -15,7 +16,7 @@ import org.vash.vate.org.bouncycastle.crypto.OutputLengthException;
  * </p>
  */
 public class OldCTSBlockCipher
-    extends BufferedBlockCipher
+    extends DefaultBufferedBlockCipher
 {
     private int     blockSize;
 
@@ -149,14 +150,18 @@ public class OldCTSBlockCipher
         if (len > gapLen)
         {
             System.arraycopy(in, inOff, buf, bufOff, gapLen);
-
+            inOff += gapLen;
+            len -= gapLen;
+            if (in == out && Arrays.segmentsOverlap(inOff, len, outOff, length))
+            {
+                in = new byte[len];
+                System.arraycopy(out, inOff, in, 0, len);
+                inOff = 0;
+            }
             resultLen += cipher.processBlock(buf, 0, out, outOff);
             System.arraycopy(buf, blockSize, buf, 0, blockSize);
 
             bufOff = blockSize;
-
-            len -= gapLen;
-            inOff += gapLen;
 
             while (len > blockSize)
             {

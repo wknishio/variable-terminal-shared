@@ -58,10 +58,35 @@ public class JPAKEUtil
     /**
      * Converts the given password to a {@link BigInteger}
      * for use in arithmetic calculations.
+     * 
+     * @deprecated Use version including the modulus instead.
      */
     public static BigInteger calculateS(char[] password)
     {
-        return new BigInteger(Strings.toUTF8ByteArray(password));
+        return new BigInteger(1, Strings.toUTF8ByteArray(password));
+    }
+
+    /**
+     * Converts the given password to a {@link BigInteger} mod q.
+     */
+    public static BigInteger calculateS(BigInteger q, byte[] password)
+        throws CryptoException
+    {
+        BigInteger s = new BigInteger(1, password).mod(q);
+        if (s.signum() == 0)
+        {
+            throw new CryptoException("MUST ensure s is not equal to 0 modulo q");
+        }
+        return s;
+    }
+
+    /**
+     * Converts the given password to a {@link BigInteger} mod q.
+     */
+    public static BigInteger calculateS(BigInteger q, char[] password)
+        throws CryptoException
+    {
+        return calculateS(q, Strings.toUTF8ByteArray(password));
     }
 
     /**
@@ -227,15 +252,15 @@ public class JPAKEUtil
         BigInteger r = zeroKnowledgeProof[1];
 
         BigInteger h = calculateHashForZeroKnowledgeProof(g, gv, gx, participantId, digest);
-        if (!(gx.compareTo(ZERO) == 1 && // g^x > 0
-            gx.compareTo(p) == -1 && // g^x < p
-            gx.modPow(q, p).compareTo(ONE) == 0 && // g^x^q mod q = 1
+        if (!(gx.signum() > 0 && // g^x > 0
+            gx.compareTo(p) < 0 && // g^x < p
+            gx.modPow(q, p).equals(ONE) && // g^x^q mod q = 1
                 /*
                  * Below, I took an straightforward way to compute g^r * g^x^h,
                  * which needs 2 exp. Using a simultaneous computation technique
                  * would only need 1 exp.
                  */
-            g.modPow(r, p).multiply(gx.modPow(h, p)).mod(p).compareTo(gv) == 0)) // g^v=g^r * g^x^h
+            g.modPow(r, p).multiply(gx.modPow(h, p)).mod(p).equals(gv))) // g^v=g^r * g^x^h
         {
             throw new CryptoException("Zero-knowledge proof validation failed");
         }

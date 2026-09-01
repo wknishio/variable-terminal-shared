@@ -1,8 +1,8 @@
 package org.vash.vate.org.bouncycastle.crypto.modes;
 
 import org.vash.vate.org.bouncycastle.crypto.BlockCipher;
-import org.vash.vate.org.bouncycastle.crypto.BufferedBlockCipher;
 import org.vash.vate.org.bouncycastle.crypto.DataLengthException;
+import org.vash.vate.org.bouncycastle.crypto.DefaultBufferedBlockCipher;
 import org.vash.vate.org.bouncycastle.crypto.InvalidCipherTextException;
 import org.vash.vate.org.bouncycastle.crypto.OutputLengthException;
 
@@ -13,10 +13,10 @@ import org.vash.vate.org.bouncycastle.crypto.OutputLengthException;
  * or on a doFinal (unless the current block in the buffer is a pad block).
  * The padding mechanism used is the one outlined in PKCS5/PKCS7.
  *
- * @deprecated use org.bouncycastle.crypto.paddings.PaddedBufferedBlockCipher instead.
+ * @deprecated use org.vash.vate.org.bouncycastle.crypto.paddings.PaddedBufferedBlockCipher instead.
  */
 public class PaddedBlockCipher
-    extends BufferedBlockCipher
+    extends DefaultBufferedBlockCipher
 {
     /**
      * Create a buffered block cipher with, or without, padding.

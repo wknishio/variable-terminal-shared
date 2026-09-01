@@ -2,8 +2,10 @@ package org.vash.vate.org.bouncycastle.crypto.engines;
 
 import org.vash.vate.org.bouncycastle.crypto.BlockCipher;
 import org.vash.vate.org.bouncycastle.crypto.CipherParameters;
+import org.vash.vate.org.bouncycastle.crypto.CryptoServicesRegistrar;
 import org.vash.vate.org.bouncycastle.crypto.DataLengthException;
 import org.vash.vate.org.bouncycastle.crypto.OutputLengthException;
+import org.vash.vate.org.bouncycastle.crypto.constraints.DefaultServiceProperties;
 import org.vash.vate.org.bouncycastle.crypto.params.KeyParameter;
 import org.vash.vate.org.bouncycastle.util.Integers;
 import org.vash.vate.org.bouncycastle.util.Pack;
@@ -226,6 +228,8 @@ public final class TwofishEngine
 
     public TwofishEngine()
     {
+        CryptoServicesRegistrar.checkConstraints(new DefaultServiceProperties(getAlgorithmName(), 256));
+
         // calculate the MDS matrix
         int[] m1 = new int[2];
         int[] mX = new int[2];
@@ -285,6 +289,8 @@ public final class TwofishEngine
             default:
                 throw new IllegalArgumentException("Key length not 128/192/256 bits.");
             }
+
+            CryptoServicesRegistrar.checkConstraints(new DefaultServiceProperties(getAlgorithmName(), keyBits, params, Utils.getPurpose(encrypting)));
 
             this.k64Cnt = this.workingKey.length / 8;
             setKey(this.workingKey);

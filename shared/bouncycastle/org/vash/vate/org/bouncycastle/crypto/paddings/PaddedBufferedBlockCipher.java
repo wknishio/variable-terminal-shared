@@ -1,12 +1,13 @@
 package org.vash.vate.org.bouncycastle.crypto.paddings;
 
 import org.vash.vate.org.bouncycastle.crypto.BlockCipher;
-import org.vash.vate.org.bouncycastle.crypto.BufferedBlockCipher;
 import org.vash.vate.org.bouncycastle.crypto.CipherParameters;
 import org.vash.vate.org.bouncycastle.crypto.DataLengthException;
+import org.vash.vate.org.bouncycastle.crypto.DefaultBufferedBlockCipher;
 import org.vash.vate.org.bouncycastle.crypto.InvalidCipherTextException;
 import org.vash.vate.org.bouncycastle.crypto.OutputLengthException;
 import org.vash.vate.org.bouncycastle.crypto.params.ParametersWithRandom;
+import org.vash.vate.org.bouncycastle.util.Arrays;
 
 /**
  * A wrapper class that allows block ciphers to be used to process data in
@@ -16,7 +17,7 @@ import org.vash.vate.org.bouncycastle.crypto.params.ParametersWithRandom;
  * The default padding mechanism used is the one outlined in PKCS5/PKCS7.
  */
 public class PaddedBufferedBlockCipher
-    extends BufferedBlockCipher
+    extends DefaultBufferedBlockCipher
 {
     BlockCipherPadding  padding;
 
@@ -202,12 +203,18 @@ public class PaddedBufferedBlockCipher
         if (len > gapLen)
         {
             System.arraycopy(in, inOff, buf, bufOff, gapLen);
+            inOff += gapLen;
+            len -= gapLen;
+            if (in == out && Arrays.segmentsOverlap(inOff, len, outOff, length))
+            {
+                in = new byte[len];
+                System.arraycopy(out, inOff, in, 0, len);
+                inOff = 0;
+            }
 
             resultLen += cipher.processBlock(buf, 0, out, outOff);
 
             bufOff = 0;
-            len -= gapLen;
-            inOff += gapLen;
 
             while (len > buf.length)
             {

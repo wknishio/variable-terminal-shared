@@ -2,13 +2,15 @@ package org.vash.vate.org.bouncycastle.crypto.engines;
 
 import org.vash.vate.org.bouncycastle.crypto.BlockCipher;
 import org.vash.vate.org.bouncycastle.crypto.CipherParameters;
+import org.vash.vate.org.bouncycastle.crypto.CryptoServicePurpose;
+import org.vash.vate.org.bouncycastle.crypto.CryptoServicesRegistrar;
 import org.vash.vate.org.bouncycastle.crypto.DataLengthException;
 import org.vash.vate.org.bouncycastle.crypto.OutputLengthException;
-import org.vash.vate.org.bouncycastle.crypto.StatelessProcessing;
+import org.vash.vate.org.bouncycastle.crypto.constraints.DefaultServiceProperties;
 import org.vash.vate.org.bouncycastle.crypto.params.KeyParameter;
 
 public abstract class SerpentEngineBase
-    implements BlockCipher, StatelessProcessing
+    implements BlockCipher
 {
     protected static final int BLOCK_SIZE = 16;
 
@@ -17,10 +19,11 @@ public abstract class SerpentEngineBase
 
     protected boolean encrypting;
     protected int[] wKey;
+    protected int keyBits;
 
     SerpentEngineBase()
     {
-
+        CryptoServicesRegistrar.checkConstraints(new DefaultServiceProperties(getAlgorithmName(), 256));
     }
 
     /**
@@ -38,7 +41,10 @@ public abstract class SerpentEngineBase
         if (params instanceof KeyParameter)
         {
             this.encrypting = encrypting;
-            this.wKey = makeWorkingKey(((KeyParameter)params).getKey());
+            byte[] keyBytes = ((KeyParameter)params).getKey();
+            this.wKey = makeWorkingKey(keyBytes);
+
+            CryptoServicesRegistrar.checkConstraints(new DefaultServiceProperties(getAlgorithmName(), keyBytes.length * 8, params, getPurpose()));
             return;
         }
 
@@ -482,4 +488,15 @@ public abstract class SerpentEngineBase
     protected abstract void encryptBlock(byte[] input, int inOff, byte[] output, int outOff);
 
     protected abstract void decryptBlock(byte[] input, int inOff, byte[] output, int outOff);
+
+    // Service Definitions
+    private CryptoServicePurpose getPurpose()
+    {
+        if (wKey == null)
+        {
+            return CryptoServicePurpose.ANY;
+        }
+
+        return encrypting ? CryptoServicePurpose.ENCRYPTION : CryptoServicePurpose.DECRYPTION;
+    }
 }

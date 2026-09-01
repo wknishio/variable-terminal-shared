@@ -1,5 +1,8 @@
 package org.vash.vate.org.bouncycastle.crypto.digests;
 
+import org.vash.vate.org.bouncycastle.crypto.CryptoServiceProperties;
+import org.vash.vate.org.bouncycastle.crypto.CryptoServicePurpose;
+import org.vash.vate.org.bouncycastle.crypto.CryptoServicesRegistrar;
 import org.vash.vate.org.bouncycastle.util.Memoable;
 import org.vash.vate.org.bouncycastle.util.Pack;
 
@@ -46,12 +49,23 @@ public class SM3Digest
         }
     }
 
-
     /**
      * Standard constructor
      */
     public SM3Digest()
     {
+        this(CryptoServicePurpose.ANY);
+    }
+
+    /**
+     * Standard constructor, with Purpose
+     */
+    public SM3Digest(CryptoServicePurpose purpose)
+    {
+        super(purpose);
+
+        CryptoServicesRegistrar.checkConstraints(cryptoServiceProperties());
+
         reset();
     }
 
@@ -62,6 +76,8 @@ public class SM3Digest
     public SM3Digest(SM3Digest t)
     {
         super(t);
+
+        CryptoServicesRegistrar.checkConstraints(cryptoServiceProperties());
 
         copyIn(t);
     }
@@ -82,7 +98,6 @@ public class SM3Digest
     {
         return DIGEST_LENGTH;
     }
-
 
     public Memoable copy()
     {
@@ -117,9 +132,7 @@ public class SM3Digest
         this.xOff = 0;
     }
 
-
-    public int doFinal(byte[] out,
-                       int outOff)
+    public int doFinal(byte[] out, int outOff)
     {
         finish();
 
@@ -130,19 +143,9 @@ public class SM3Digest
         return DIGEST_LENGTH;
     }
 
-
-    protected void processWord(byte[] in,
-                               int inOff)
+    protected void processWord(byte[] in, int inOff)
     {
-        // Note: Inlined for performance
-        // this.inwords[xOff] = Pack.bigEndianToInt(in, inOff);
-        int n = (((in[inOff] & 0xff) << 24) |
-            ((in[++inOff] & 0xff) << 16) |
-            ((in[++inOff] & 0xff) << 8) |
-            ((in[++inOff] & 0xff)));
-
-        this.inwords[this.xOff] = n;
-        ++this.xOff;
+        inwords[xOff++] = Pack.bigEndianToInt(in, inOff);
 
         if (this.xOff >= 16)
         {
@@ -321,5 +324,10 @@ ROLL 23 :  ((x << 23) | (x >>> (32-23)))
         this.V[7] ^= H;
 
         this.xOff = 0;
+    }
+
+    protected CryptoServiceProperties cryptoServiceProperties()
+    {
+        return Utils.getDefaultProperties(this, 256, purpose);
     }
 }

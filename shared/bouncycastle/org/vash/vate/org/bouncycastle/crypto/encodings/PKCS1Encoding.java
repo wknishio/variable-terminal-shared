@@ -25,7 +25,7 @@ public class PKCS1Encoding
 
     /**
      * some providers fail to include the leading zero in PKCS1 encoded blocks. If you need to
-     * work with one of these set the system property org.bouncycastle.pkcs1.not_strict to true.
+     * work with one of these set the system property org.vash.vate.org.bouncycastle.pkcs1.not_strict to true.
      * <p>
      * The system property is checked during construction of the encoding object, it is set to
      * false by default.

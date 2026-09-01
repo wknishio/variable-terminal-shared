@@ -1,8 +1,11 @@
 package org.vash.vate.org.bouncycastle.crypto.engines;
 
 import org.vash.vate.org.bouncycastle.crypto.CipherParameters;
+import org.vash.vate.org.bouncycastle.crypto.CryptoServicesRegistrar;
 import org.vash.vate.org.bouncycastle.crypto.DataLengthException;
+import org.vash.vate.org.bouncycastle.crypto.OutputLengthException;
 import org.vash.vate.org.bouncycastle.crypto.StreamCipher;
+import org.vash.vate.org.bouncycastle.crypto.constraints.DefaultServiceProperties;
 import org.vash.vate.org.bouncycastle.crypto.params.KeyParameter;
 import org.vash.vate.org.bouncycastle.crypto.params.ParametersWithIV;
 
@@ -22,10 +25,8 @@ import org.vash.vate.org.bouncycastle.crypto.params.ParametersWithIV;
 public class HC128Engine
     implements StreamCipher
 {
-    private final int[] p = new int[512];
-    private final int[] q = new int[512];
-    private final byte[] key = new byte[16];
-    private final byte[] iv = new byte[16];
+    private int[] p = new int[512];
+    private int[] q = new int[512];
     private int cnt = 0;
 
     private static int f1(int x)
@@ -40,13 +41,13 @@ public class HC128Engine
             ^ (x >>> 10);
     }
 
-    private static int g1(int x, int y, int z)
+    private int g1(int x, int y, int z)
     {
         return (rotateRight(x, 10) ^ rotateRight(z, 23))
             + rotateRight(y, 8);
     }
 
-    private static int g2(int x, int y, int z)
+    private int g2(int x, int y, int z)
     {
         return (rotateLeft(x, 10) ^ rotateLeft(z, 23)) + rotateLeft(y, 8);
     }
@@ -65,12 +66,12 @@ public class HC128Engine
         return (x >>> bits) | (x << -bits);
     }
 
-    private final int h1(int x)
+    private int h1(int x)
     {
         return q[x & 0xFF] + q[((x >> 16) & 0xFF) + 256];
     }
 
-    private final int h2(int x)
+    private int h2(int x)
     {
         return p[x & 0xFF] + p[((x >> 16) & 0xFF) + 256];
     }
@@ -90,7 +91,7 @@ public class HC128Engine
         return mod512(x - y);
     }
 
-    private final int step()
+    private int step()
     {
         int j = mod512(cnt);
         int ret;
@@ -108,15 +109,20 @@ public class HC128Engine
         return ret;
     }
 
-    
-    //private boolean initialised;
+    private byte[] key, iv;
+    private boolean initialised;
 
-    private final void init()
+    private void init()
     {
         if (key.length != 16)
         {
             throw new java.lang.IllegalArgumentException(
                 "The key must be 128 bits long");
+        }
+        if (iv.length != 16)
+        {
+            throw new java.lang.IllegalArgumentException(
+                "The IV must be 128 bits long");
         }
 
         idx = 0;
@@ -156,7 +162,7 @@ public class HC128Engine
         cnt = 0;
     }
 
-    public final String getAlgorithmName()
+    public String getAlgorithmName()
     {
         return "HC-128";
     }
@@ -170,28 +176,28 @@ public class HC128Engine
      * @throws IllegalArgumentException if the params argument is
      *                                  inappropriate (ie. the key is not 128 bit long).
      */
-    public final void init(boolean forEncryption, CipherParameters params)
+    public void init(boolean forEncryption, CipherParameters params)
         throws IllegalArgumentException
     {
-        CipherParameters keyParam = params;
-        byte[] paramIV = null;
-        byte[] paramKey = null;
+        CipherParameters keyParam;
+
         if (params instanceof ParametersWithIV)
         {
-            paramIV = ((ParametersWithIV)params).getIV();
+            iv = ((ParametersWithIV)params).getIV();
             keyParam = ((ParametersWithIV)params).getParameters();
         }
         else
         {
-            paramIV = new byte[0];
+            throw new IllegalArgumentException("no IV passed");
         }
 
         if (keyParam instanceof KeyParameter)
         {
-            paramKey = ((KeyParameter)keyParam).getKey();
-            System.arraycopy(paramIV, 0, iv, 0, paramIV.length);
-            System.arraycopy(paramKey, 0, key, 0, paramKey.length);
+            key = ((KeyParameter)keyParam).getKey();
             init();
+
+            CryptoServicesRegistrar.checkConstraints(new DefaultServiceProperties(
+                    this.getAlgorithmName(), 128, params, Utils.getPurpose(forEncryption)));
         }
         else
         {
@@ -199,15 +205,14 @@ public class HC128Engine
                 "Invalid parameter passed to HC128 init - "
                     + params.getClass().getName());
         }
-        
-        
-        //initialised = true;
+
+        initialised = true;
     }
 
-    private final byte[] buf = new byte[4];
+    private byte[] buf = new byte[4];
     private int idx = 0;
 
-    private final byte getByte()
+    private byte getByte()
     {
         if (idx == 0)
         {
@@ -225,9 +230,25 @@ public class HC128Engine
         return ret;
     }
 
-    public final int processBytes(byte[] in, int inOff, int len, byte[] out,
+    public int processBytes(byte[] in, int inOff, int len, byte[] out,
                              int outOff) throws DataLengthException
     {
+        if (!initialised)
+        {
+            throw new IllegalStateException(getAlgorithmName()
+                + " not initialised");
+        }
+
+        if ((inOff + len) > in.length)
+        {
+            throw new DataLengthException("input buffer too short");
+        }
+
+        if ((outOff + len) > out.length)
+        {
+            throw new OutputLengthException("output buffer too short");
+        }
+
         for (int i = 0; i < len; i++)
         {
             out[outOff + i] = (byte)(in[inOff + i] ^ getByte());
@@ -236,12 +257,12 @@ public class HC128Engine
         return len;
     }
 
-    public final void reset()
+    public void reset()
     {
         init();
     }
 
-    public final byte returnByte(byte in)
+    public byte returnByte(byte in)
     {
         return (byte)(in ^ getByte());
     }

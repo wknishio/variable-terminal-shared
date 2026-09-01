@@ -1,8 +1,8 @@
 package org.vash.vate.org.bouncycastle.crypto.params;
 
-import java.math.BigInteger;
-
 import org.vash.vate.org.bouncycastle.crypto.CipherParameters;
+
+import java.math.BigInteger;
 
 public class RSABlindingParameters
     implements CipherParameters

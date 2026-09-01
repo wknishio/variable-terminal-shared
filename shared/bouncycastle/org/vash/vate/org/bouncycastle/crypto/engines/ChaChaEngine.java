@@ -1,55 +1,19 @@
 package org.vash.vate.org.bouncycastle.crypto.engines;
 
-import org.vash.vate.org.bouncycastle.crypto.CipherParameters;
-import org.vash.vate.org.bouncycastle.crypto.SkippingStreamCipher;
-import org.vash.vate.org.bouncycastle.crypto.params.KeyParameter;
-import org.vash.vate.org.bouncycastle.crypto.params.ParametersWithIV;
 import org.vash.vate.org.bouncycastle.util.Integers;
 import org.vash.vate.org.bouncycastle.util.Pack;
-import org.vash.vate.org.bouncycastle.util.Strings;
 
 /**
  * Implementation of Daniel J. Bernstein's ChaCha stream cipher.
  */
-public class ChaChaEngine implements SkippingStreamCipher
+public class ChaChaEngine extends Salsa20Engine
 {
-  public final static int DEFAULT_ROUNDS = 20;
-
-  /** Constants */
-  private final static int STATE_SIZE = 16; // 16, 32 bit ints = 64 bytes
-
-  private final static int[] TAU_SIGMA = Pack.littleEndianToInt(Strings.toByteArray("expand 16-byte k" + "expand 32-byte k"), 0, 8);
-
-  protected final void packTauOrSigma(int keyLength, int[] state, int stateOffset)
-  {
-      int tsOff = (keyLength - 16) / 4;
-      state[stateOffset    ] = TAU_SIGMA[tsOff    ];
-      state[stateOffset + 1] = TAU_SIGMA[tsOff + 1];
-      state[stateOffset + 2] = TAU_SIGMA[tsOff + 2];
-      state[stateOffset + 3] = TAU_SIGMA[tsOff + 3];
-  }
-
-  /** @deprecated */
-  protected final static byte[]
-      sigma = Strings.toByteArray("expand 32-byte k"),
-      tau   = Strings.toByteArray("expand 16-byte k");
-
-  protected final int rounds;
-
-  /*
-   * variables to hold the state of the engine
-   * during encryption and decryption
-   */
-  private int         index = 0;
-  protected final int[]     engineState = new int[STATE_SIZE]; // state
-  protected final int[]     x = new int[STATE_SIZE] ; // internal buffer
-  private final byte[]      keyStream   = new byte[STATE_SIZE * 4]; // expanded state, 64 bytes
     /**
      * Creates a 20 rounds ChaCha engine.
      */
     public ChaChaEngine()
     {
-      this(DEFAULT_ROUNDS);
+        super();
     }
 
     /**
@@ -58,81 +22,15 @@ public class ChaChaEngine implements SkippingStreamCipher
      */
     public ChaChaEngine(int rounds)
     {
-      if (rounds <= 0 || (rounds & 1) != 0)
-      {
-          throw new IllegalArgumentException("'rounds' must be a positive, even number");
-      }
-      this.rounds = rounds;
+        super(rounds);
     }
-    
-    public final void init(
-        boolean             forEncryption, 
-        CipherParameters     params)
-    {
-        /* 
-        * Salsa20 encryption and decryption is completely
-        * symmetrical, so the 'forEncryption' is 
-        * irrelevant. (Like 90% of stream ciphers)
-        */
 
-        if (!(params instanceof ParametersWithIV))
-        {
-            throw new IllegalArgumentException(getAlgorithmName() + " Init parameters must include an IV");
-        }
-
-        ParametersWithIV ivParams = (ParametersWithIV) params;
-
-        byte[] iv = ivParams.getIV();
-        if (iv == null || iv.length != getNonceSize())
-        {
-            throw new IllegalArgumentException(getAlgorithmName() + " requires exactly " + getNonceSize()
-                    + " bytes of IV");
-        }
-
-        CipherParameters keyParam = ivParams.getParameters();
-        if (keyParam == null)
-        {
-//            if (!initialised)
-//            {
-//                throw new IllegalStateException(getAlgorithmName() + " KeyParameter can not be null for first initialisation");
-//            }
-
-            setKey(null, iv);
-        }
-        else if (keyParam instanceof KeyParameter)
-        {
-            setKey(((KeyParameter)keyParam).getKey(), iv);
-        }
-        else
-        {
-            throw new IllegalArgumentException(getAlgorithmName() + " Init parameters must contain a KeyParameter (or null for re-init)");
-        }
-
-        reset();
-
-        //initialised = true;
-    }
-    
-    public final void reset()
-    {
-        index = 0;
-        resetLimitCounter();
-        resetCounter();
-
-        generateKeyStream(keyStream);
-    }
-    
     public String getAlgorithmName()
     {
         return "ChaCha" + rounds;
     }
-    
-    protected static final int getNonceSize()
-    {
-        return 8;
-    }
 
-    protected final void advanceCounter(long diff)
+    protected void advanceCounter(long diff)
     {
         int hi = (int)(diff >>> 32);
         int lo = (int)diff;
@@ -152,7 +50,7 @@ public class ChaChaEngine implements SkippingStreamCipher
         }
     }
 
-    protected final void advanceCounter()
+    protected void advanceCounter()
     {
         if (++engineState[12] == 0)
         {
@@ -160,7 +58,7 @@ public class ChaChaEngine implements SkippingStreamCipher
         }
     }
 
-    protected final void retreatCounter(long diff)
+    protected void retreatCounter(long diff)
     {
         int hi = (int)(diff >>> 32);
         int lo = (int)diff;
@@ -171,10 +69,10 @@ public class ChaChaEngine implements SkippingStreamCipher
             {
                 engineState[13] -= hi;
             }
-//            else
-//            {
-//                throw new IllegalStateException("attempt to reduce counter past zero.");
-//            }
+            else
+            {
+                throw new IllegalStateException("attempt to reduce counter past zero.");
+            }
         }
 
         if ((engineState[12] & 0xffffffffL) >= (lo & 0xffffffffL))
@@ -188,19 +86,19 @@ public class ChaChaEngine implements SkippingStreamCipher
                 --engineState[13];
                 engineState[12] -= lo;
             }
-//            else
-//            {
-//                throw new IllegalStateException("attempt to reduce counter past zero.");
-//            }
+            else
+            {
+                throw new IllegalStateException("attempt to reduce counter past zero.");
+            }
         }
     }
 
-    protected final void retreatCounter()
+    protected void retreatCounter()
     {
-//        if (engineState[12] == 0 && engineState[13] == 0)
-//        {
-//            throw new IllegalStateException("attempt to reduce counter past zero.");
-//        }
+        if (engineState[12] == 0 && engineState[13] == 0)
+        {
+            throw new IllegalStateException("attempt to reduce counter past zero.");
+        }
 
         if (--engineState[12] == -1)
         {
@@ -208,89 +106,17 @@ public class ChaChaEngine implements SkippingStreamCipher
         }
     }
 
-    protected final long getCounter()
+    protected long getCounter()
     {
         return ((long)engineState[13] << 32) | (engineState[12] & 0xffffffffL);
     }
 
-    protected final void resetCounter()
+    protected void resetCounter()
     {
         engineState[12] = engineState[13] = 0;
     }
-    
-    private final void resetLimitCounter()
-    {
-//        cW0 = 0;
-//        cW1 = 0;
-//        cW2 = 0;
-    }
-    
-    public final long skip(long numberOfBytes)
-    {
-        if (numberOfBytes >= 0)
-        {
-            long remaining = numberOfBytes;
 
-            if (remaining >= 64)
-            {
-                long count = remaining / 64;
-
-                advanceCounter(count);
-
-                remaining -= count * 64;
-            }
-
-            int oldIndex = index;
-
-            index = (index + (int)remaining) & 63;
-
-            if (index < oldIndex)
-            {
-                advanceCounter();
-            }
-        }
-        else
-        {
-            long remaining = -numberOfBytes;
-
-            if (remaining >= 64)
-            {
-                long count = remaining / 64;
-
-                retreatCounter(count);
-
-                remaining -= count * 64;
-            }
-
-            for (long i = 0; i < remaining; i++)
-            {
-                if (index == 0)
-                {
-                    retreatCounter();
-                }
-
-                index = (index - 1) & 63;
-            }
-        }
-
-        generateKeyStream(keyStream);
-
-        return numberOfBytes;
-    }
-
-    public final long seekTo(long position)
-    {
-        reset();
-
-        return skip(position);
-    }
-
-    public final long getPosition()
-    {
-        return getCounter() * 64 + index;
-    }
-
-    protected final void setKey(byte[] keyBytes, byte[] ivBytes)
+    protected void setKey(byte[] keyBytes, byte[] ivBytes)
     {
         if (keyBytes != null)
         {
@@ -310,54 +136,32 @@ public class ChaChaEngine implements SkippingStreamCipher
         Pack.littleEndianToInt(ivBytes, 0, engineState, 14, 2);
     }
 
-    protected final void generateKeyStream(byte[] output)
+    protected void generateKeyStream(byte[] output)
     {
         chachaCore(rounds, engineState, x);
         Pack.intToLittleEndian(x, output, 0);
     }
-    
-    public final byte returnByte(byte in)
-    {
-        byte out = (byte)(keyStream[index]^in);
-        index = (index + 1) & 63;
 
-        if (index == 0)
-        {
-            advanceCounter();
-            generateKeyStream(keyStream);
-        }
-
-        return out;
-    }
-
-    public final int processBytes(
-        byte[]     in, 
-        int     inOff, 
-        int     len, 
-        byte[]     out, 
-        int     outOff)
-    {
-        for (int i = 0; i < len; i++)
-        {
-            out[i + outOff] = (byte)(keyStream[index] ^ in[i + inOff]);
-            index = (index + 1) & 63;
-
-            if (index == 0)
-            {
-                advanceCounter();
-                generateKeyStream(keyStream);
-            }
-        }
-
-        return len;
-    }
     /**
      * ChaCha function
      *
      * @param   input   input data
      */    
-    public static final void chachaCore(int rounds, int[] input, int[] x)
+    public static void chachaCore(int rounds, int[] input, int[] x)
     {
+        if (input.length != 16)
+        {
+            throw new IllegalArgumentException();
+        }
+        if (x.length != 16)
+        {
+            throw new IllegalArgumentException();
+        }
+        if (rounds % 2 != 0)
+        {
+            throw new IllegalArgumentException("Number of rounds must be even");
+        }
+
         int x00 = input[ 0];
         int x01 = input[ 1];
         int x02 = input[ 2];
@@ -409,6 +213,7 @@ public class ChaChaEngine implements SkippingStreamCipher
             x09 += x14; x04 = Integers.rotateLeft(x04 ^ x09, 12);
             x03 += x04; x14 = Integers.rotateLeft(x14 ^ x03, 8);
             x09 += x14; x04 = Integers.rotateLeft(x04 ^ x09, 7);
+
         }
 
         x[ 0] = x00 + input[ 0];

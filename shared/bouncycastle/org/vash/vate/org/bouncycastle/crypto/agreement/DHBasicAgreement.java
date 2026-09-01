@@ -4,6 +4,7 @@ import java.math.BigInteger;
 
 import org.vash.vate.org.bouncycastle.crypto.BasicAgreement;
 import org.vash.vate.org.bouncycastle.crypto.CipherParameters;
+import org.vash.vate.org.bouncycastle.crypto.CryptoServicesRegistrar;
 import org.vash.vate.org.bouncycastle.crypto.params.AsymmetricKeyParameter;
 import org.vash.vate.org.bouncycastle.crypto.params.DHParameters;
 import org.vash.vate.org.bouncycastle.crypto.params.DHPrivateKeyParameters;
@@ -47,6 +48,8 @@ public class DHBasicAgreement
 
         this.key = (DHPrivateKeyParameters)kParam;
         this.dhParams = key.getParameters();
+
+        CryptoServicesRegistrar.checkConstraints(Utils.getDefaultProperties("DHB", key));
     }
 
     public int getFieldSize()
