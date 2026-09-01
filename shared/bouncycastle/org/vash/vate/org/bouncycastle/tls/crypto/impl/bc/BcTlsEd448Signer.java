@@ -1,0 +1,30 @@
+package org.vash.vate.org.bouncycastle.tls.crypto.impl.bc;
+
+import org.vash.vate.org.bouncycastle.crypto.params.Ed448PrivateKeyParameters;
+import org.vash.vate.org.bouncycastle.crypto.signers.Ed448Signer;
+import org.vash.vate.org.bouncycastle.tls.SignatureAndHashAlgorithm;
+import org.vash.vate.org.bouncycastle.tls.SignatureScheme;
+import org.vash.vate.org.bouncycastle.tls.TlsUtils;
+import org.vash.vate.org.bouncycastle.tls.crypto.TlsStreamSigner;
+
+public class BcTlsEd448Signer
+    extends BcTlsSigner
+{
+    public BcTlsEd448Signer(BcTlsCrypto crypto, Ed448PrivateKeyParameters privateKey)
+    {
+        super(crypto, privateKey);
+    }
+
+    public TlsStreamSigner getStreamSigner(SignatureAndHashAlgorithm algorithm)
+    {
+        if (algorithm == null || SignatureScheme.from(algorithm) != SignatureScheme.ed448)
+        {
+            throw new IllegalStateException("Invalid algorithm: " + algorithm);
+        }
+
+        Ed448Signer signer = new Ed448Signer(TlsUtils.EMPTY_BYTES);
+        signer.init(true, privateKey);
+
+        return new BcTlsStreamSigner(signer);
+    }
+}
