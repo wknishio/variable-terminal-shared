@@ -78,7 +78,7 @@ public class Base85 {
         */
       public final String encodeToString ( final byte[] data ) {
          try {
-          return new String( encode( data ), "US_ASCII" );
+          return new String( encode( data ), "US-ASCII" );
         } catch (UnsupportedEncodingException e) {
           return null;
         }
@@ -92,7 +92,7 @@ public class Base85 {
         */
       public final String encodeToString ( final byte[] data, final int offset, final int length ) {
          try {
-          return new String( encode( data, offset, length ), "US_ASCII" );
+          return new String( encode( data, offset, length ), "US-ASCII" );
         } catch (UnsupportedEncodingException e) {
           return null;
         }
@@ -213,7 +213,7 @@ public class Base85 {
 
       protected abstract byte[] getEncodeMap();
       public String getCharset() { try {
-        return new String( getEncodeMap(), "US_ASCII" );
+        return new String( getEncodeMap(), "US-ASCII" );
       } catch (UnsupportedEncodingException e) {
         return null;
       } }
@@ -232,7 +232,7 @@ public class Base85 {
       {
         byte[] MAP = null;
         try {
-          MAP = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#$%&()*+-;<=>?@^_`{|}~".getBytes( "US_ASCII" );
+          MAP = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#$%&()*+-;<=>?@^_`{|}~".getBytes( "US-ASCII" );
         } catch (UnsupportedEncodingException e) {
           
         }
@@ -259,7 +259,7 @@ public class Base85 {
       {
         byte[] MAP = null;
         try {
-          MAP = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.-:+=^!/*?&<>()[]{}@%$#".getBytes( "US_ASCII" );
+          MAP = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.-:+=^!/*?&<>()[]{}@%$#".getBytes( "US-ASCII" );
         } catch (UnsupportedEncodingException e) {
           
         }
@@ -286,7 +286,7 @@ public class Base85 {
       {
         byte[] MAP = null;
         try {
-          MAP = "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstu".getBytes( "US_ASCII" );
+          MAP = "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstu".getBytes( "US-ASCII" );
         } catch (UnsupportedEncodingException e) {
           
         }
@@ -370,7 +370,7 @@ public class Base85 {
         */
       public int calcDecodedLength ( String data ) {
          try {
-          return calcDecodedLength( data.getBytes( "US_ASCII" ) );
+          return calcDecodedLength( data.getBytes( "US-ASCII" ) );
         } catch (UnsupportedEncodingException e) {
           // TODO Auto-generated catch block
           return -1;
@@ -406,7 +406,7 @@ public class Base85 {
         */
       public final String decode ( final String data ) {
          try {
-          return new String( decode( data.getBytes( "US_ASCII" ) ), "UTF-8" );
+          return new String( decode( data.getBytes( "US-ASCII" ) ), "UTF-8" );
         } catch (UnsupportedEncodingException e) {
           return null;
         }
@@ -426,7 +426,7 @@ public class Base85 {
         */
       public final byte[] decodeToBytes ( final String data ) {
          try {
-          return decode( data.getBytes( "US_ASCII" ) );
+          return decode( data.getBytes( "US-ASCII" ) );
         } catch (UnsupportedEncodingException e) {
           // TODO Auto-generated catch block
           return null;
@@ -510,7 +510,7 @@ public class Base85 {
         */
       public boolean test ( final String data ) {
          try {
-          return test( data.getBytes( "US_ASCII" ) );
+          return test( data.getBytes( "US-ASCII" ) );
         } catch (UnsupportedEncodingException e) {
           return false;
         }
