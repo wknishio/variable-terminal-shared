@@ -37,6 +37,7 @@ import org.vash.vate.com.guichaguri.minimalftp.api.ResponseException;
 import org.vash.vate.com.guichaguri.minimalftp.api.CommandInfo.Command;
 import org.vash.vate.com.guichaguri.minimalftp.handler.FTPConnectionHandler;
 import org.vash.vate.com.guichaguri.minimalftp.handler.FTPFileHandler;
+import org.vash.vate.compatibility.VTSecureSockets;
 
 /**
  * Represents a FTP user connected to the server
@@ -196,7 +197,9 @@ public class FTPConnection implements Closeable {
     public void enableSSL(SSLContext context) throws IOException {
         SSLSocketFactory factory = context.getSocketFactory();
         con = factory.createSocket(con, con.getInetAddress().getHostAddress(), con.getPort(), true);
-        ((SSLSocket)con).setUseClientMode(false);
+        SSLSocket tlsSocket = (SSLSocket)con;
+        tlsSocket.setUseClientMode(false);
+        VTSecureSockets.disableSSL(tlsSocket);
 
         reader = new BufferedReader(new InputStreamReader(con.getInputStream()));
         writer = new BufferedWriter(new OutputStreamWriter(con.getOutputStream()));

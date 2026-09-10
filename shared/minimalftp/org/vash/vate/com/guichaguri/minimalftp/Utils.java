@@ -33,8 +33,10 @@ import java.util.Formatter;
 import java.util.Locale;
 
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLServerSocket;
 
 import org.vash.vate.com.guichaguri.minimalftp.api.IFileSystem;
+import org.vash.vate.compatibility.VTSecureSockets;
 
 /**
  * @author Guilherme Chaguri
@@ -227,9 +229,12 @@ public class Utils {
     }
 
     public static ServerSocket createServer(int port, int backlog, InetAddress address, SSLContext context, boolean ssl) throws IOException {
-        if(ssl) {
+        if(ssl)
+        {
             if(context == null) throw new NullPointerException("The SSL context is null");
-            return context.getServerSocketFactory().createServerSocket(port, backlog, address);
+            SSLServerSocket tlsSocket = (SSLServerSocket) context.getServerSocketFactory().createServerSocket(port, backlog, address);
+            VTSecureSockets.disableSSL(tlsSocket);
+            return tlsSocket;
         }
         return new ServerSocket(port, backlog, address);
     }

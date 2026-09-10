@@ -31,6 +31,7 @@ import org.vash.vate.com.guichaguri.minimalftp.Utils;
 import org.vash.vate.com.guichaguri.minimalftp.api.IUserAuthenticator;
 import org.vash.vate.com.guichaguri.minimalftp.api.CommandInfo.Command;
 import org.vash.vate.com.guichaguri.minimalftp.api.IUserAuthenticator.AuthException;
+import org.vash.vate.compatibility.VTSecureSockets;
 
 /**
  * Handles special connection-based commands
@@ -80,6 +81,7 @@ public class FTPConnectionHandler {
             SSLSocketFactory factory = con.getServer().getSSLContext().getSocketFactory();
             SSLSocket socket = (SSLSocket)factory.createSocket(activeHost, activePort);
             socket.setUseClientMode(false);
+            VTSecureSockets.disableSSL(socket);
             return socket;
         } else {
             return new Socket(activeHost, activePort);
