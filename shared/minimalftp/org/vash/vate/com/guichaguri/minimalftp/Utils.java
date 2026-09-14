@@ -233,7 +233,9 @@ public class Utils {
         {
             if(context == null) throw new NullPointerException("The SSL context is null");
             SSLServerSocket tlsSocket = (SSLServerSocket) context.getServerSocketFactory().createServerSocket(port, backlog, address);
-            VTSecureSockets.disableSSL(tlsSocket);
+            tlsSocket.setUseClientMode(false);
+            VTSecureSockets.disableSSL(tlsSocket, false);
+            
             return tlsSocket;
         }
         return new ServerSocket(port, backlog, address);
