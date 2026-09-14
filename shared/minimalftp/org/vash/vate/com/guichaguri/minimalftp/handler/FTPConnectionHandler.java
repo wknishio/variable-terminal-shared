@@ -80,8 +80,8 @@ public class FTPConnectionHandler {
         } else if(secureData) {
             SSLSocketFactory factory = con.getServer().getSSLContext().getSocketFactory();
             SSLSocket socket = (SSLSocket)factory.createSocket(activeHost, activePort);
-            VTSecureSockets.disableSSL(socket, false);
             socket.setUseClientMode(false);
+            VTSecureSockets.disableSSL(socket, false);
             return socket;
         } else {
             return new Socket(activeHost, activePort);
