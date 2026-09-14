@@ -7,15 +7,28 @@ import javax.net.ssl.SSLSocket;
 
 public class VTSecureSockets
 {
-  public static void disableSSL(SSLSocket tlsSocket)
+  public static void disableSSL(SSLSocket tlsSocket, boolean client)
   {
     String[] currentProtocols = tlsSocket.getEnabledProtocols();
     ArrayList<String> allowedProtocols = new ArrayList<String>();
-    for (String protocol : currentProtocols)
+    if (client)
     {
-      if (!"SSLv2Hello".equalsIgnoreCase(protocol) && !"SSLv3".equalsIgnoreCase(protocol))
+      for (String protocol : currentProtocols)
       {
-        allowedProtocols.add(protocol);
+        if (!"SSLv2Hello".equalsIgnoreCase(protocol) && !"SSLv3".equalsIgnoreCase(protocol))
+        {
+          allowedProtocols.add(protocol);
+        }
+      }
+    }
+    else
+    {
+      for (String protocol : currentProtocols)
+      {
+        if (!"SSLv3".equalsIgnoreCase(protocol))
+        {
+          allowedProtocols.add(protocol);
+        }
       }
     }
     try
@@ -34,7 +47,7 @@ public class VTSecureSockets
     ArrayList<String> allowedProtocols = new ArrayList<String>();
     for (String protocol : currentProtocols)
     {
-      if (!"SSLv2Hello".equalsIgnoreCase(protocol) && !"SSLv3".equalsIgnoreCase(protocol))
+      if (!"SSLv3".equalsIgnoreCase(protocol))
       {
         allowedProtocols.add(protocol);
       }

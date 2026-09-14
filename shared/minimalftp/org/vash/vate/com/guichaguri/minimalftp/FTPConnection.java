@@ -198,8 +198,8 @@ public class FTPConnection implements Closeable {
         SSLSocketFactory factory = context.getSocketFactory();
         con = factory.createSocket(con, con.getInetAddress().getHostAddress(), con.getPort(), true);
         SSLSocket tlsSocket = (SSLSocket)con;
+        VTSecureSockets.disableSSL(tlsSocket, false);
         tlsSocket.setUseClientMode(false);
-        VTSecureSockets.disableSSL(tlsSocket);
 
         reader = new BufferedReader(new InputStreamReader(con.getInputStream()));
         writer = new BufferedWriter(new OutputStreamWriter(con.getOutputStream()));
