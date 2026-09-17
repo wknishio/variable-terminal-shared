@@ -21,7 +21,7 @@ package org.vash.vate.org.apache.commons.compress.compressors.lz77support;
 import java.io.IOException;
 import java.util.Arrays;
 
-import com.sun.jna.compatibility.VTObjects;
+import org.vash.vate.compatibility.VTObjects;
 
 /**
  * Helper class for compression algorithms that use the ideas of LZ77.
