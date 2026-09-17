@@ -11,7 +11,6 @@
 	<classpathentry kind="src" path="shared/beanshell"/>
 	<classpathentry kind="src" path="shared/bouncycastle"/>
 	<classpathentry kind="src" path="shared/commons-codec"/>
-	<classpathentry kind="src" path="shared/commons-compress"/>
 	<classpathentry kind="src" path="shared/commons-httpclient"/>
 	<classpathentry kind="src" path="shared/commons-io"/>
 	<classpathentry kind="src" path="shared/commons-lang3"/>

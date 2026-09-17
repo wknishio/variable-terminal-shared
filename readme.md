@@ -40,7 +40,6 @@ Those are the third party libraries used in this software:
 * airlift-aircompressor by Martin Traverso for zstd and lzo compression
 * nanohttpd-1.1 by elonen, for HTTP proxy tunneling
 * commons-codec by Apache Software Foundation, for binary encodings
-* commons-compress by Apache Software Foundation, for lz4 compression codec
 * commons-httpclient by Apache Software Foundation, for HTTP proxy client
 * commons-io by Apache Software Foundation, for data and file utilities
 * commons-lang3 by Apache Software Foundation, for escaping utilities
