@@ -27,7 +27,7 @@
 	<classpathentry kind="src" path="shared/slf4j-nop"/>
 	<classpathentry kind="src" path="shared/snappy"/>
 	<classpathentry kind="src" path="shared/throttle"/>
-	<classpathentry kind="src" path="sound/jspeex"/>
+	<classpathentry kind="src" path="shared/zero-allocation-hashing"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/J2SE-1.5"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
